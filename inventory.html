@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inventory App with Backup, Dark Mode & Share</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inventory App with Share Link</title>
   <style>
     /* Base Styles */
     body {
@@ -230,7 +230,6 @@
     button:hover {
       background: #0056b3;
     }
-    /* Datalist Styles (optional, for New Item suggestions) */
     datalist {
       font-size: 1em;
     }
@@ -526,7 +525,7 @@
       return inventory.some(item => item.name.toLowerCase() === name.toLowerCase());
     }
     
-    // Function to update datalists in New Item Tab
+    // Function to update datalists for New Item Tab suggestions
     function updateNewItemDatalists() {
       nameList.innerHTML = '';
       categoryList.innerHTML = '';
@@ -798,24 +797,6 @@
       currentEditId = null;
       editModal.classList.remove('active');
     });
-    
-    // Update datalists for New Item Tab suggestions
-    function updateNewItemDatalists() {
-      nameList.innerHTML = '';
-      categoryList.innerHTML = '';
-      const names = new Set(inventory.map(item => item.name));
-      const categories = new Set(inventory.map(item => item.category));
-      names.forEach(n => {
-        const option = document.createElement('option');
-        option.value = n;
-        nameList.appendChild(option);
-      });
-      categories.forEach(c => {
-        const option = document.createElement('option');
-        option.value = c;
-        categoryList.appendChild(option);
-      });
-    }
     
     // Initialize display on page load
     renderCategoryTabs();
