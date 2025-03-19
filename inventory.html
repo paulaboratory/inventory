@@ -479,7 +479,7 @@
           if (Array.isArray(sharedInventory)) {
             inventory = sharedInventory;
             nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
-            // Hide editing tabs for read-only view
+            // Hide In/Out and New Item tabs for read-only view
             document.getElementById('tab-inout').style.display = 'none';
             document.getElementById('tab-new').style.display = 'none';
             document.getElementById('content-inout').style.display = 'none';
