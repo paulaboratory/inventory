@@ -71,7 +71,7 @@
     .tab-content.active {
       display: block;
     }
-    /* Category Sub-Tabs in Inventory Tab */
+    /* Category Sub-Tabs */
     .sub-tabs {
       display: flex;
       gap: 10px;
@@ -136,8 +136,7 @@
       border: none;
       cursor: pointer;
       font-size: 1.2em;
-      color: #007bff;
-      transition: color 0.3s;
+      transition: color 0.3s, transform 0.3s;
     }
     .card-actions button:hover {
       color: #0056b3;
@@ -328,6 +327,23 @@
     }
     .night-mode .error-message {
       color: #ffcc00;
+    }
+    /* Animation Classes */
+    .liked-animation {
+      animation: likedPulse 0.3s;
+    }
+    @keyframes likedPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    .unliked-animation {
+      animation: unlikedPulse 0.3s;
+    }
+    @keyframes unlikedPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.8); }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
@@ -529,7 +545,7 @@
       });
     });
     
-    // Load shared data if present; return true if a share parameter was found
+    // Load shared data if present
     function loadSharedData() {
       const params = new URLSearchParams(window.location.search);
       const likedDataParam = params.get('likeddata');
@@ -540,7 +556,7 @@
           const sharedLiked = JSON.parse(decoded);
           if (Array.isArray(sharedLiked)) {
             liked = sharedLiked;
-            // Hide all tabs except Liked view and related buttons
+            // Hide all tabs except Liked view and header controls (except dark mode)
             document.getElementById('tab-inventory').style.display = 'none';
             document.getElementById('tab-inout').style.display = 'none';
             document.getElementById('tab-new').style.display = 'none';
@@ -638,9 +654,33 @@
     const editSave = document.getElementById('edit-save');
     const editCancel = document.getElementById('edit-cancel');
     
-    // Prevent duplicate item names (case-insensitive)
-    function isDuplicateItem(name) {
-      return inventory.some(item => item.name.toLowerCase() === name.toLowerCase());
+    // Check if an item is liked
+    function isItemLiked(itemId) {
+      return liked.some(i => i.id === itemId);
+    }
+    
+    // Toggle like status with animation on the heart button
+    function toggleLike(itemId, btn) {
+      if (isItemLiked(itemId)) {
+        // Unlike item
+        liked = liked.filter(i => i.id !== itemId);
+        btn.classList.add('unliked-animation');
+        setTimeout(() => {
+          btn.classList.remove('unliked-animation');
+          btn.textContent = '🤍';
+        }, 300);
+      } else {
+        // Like item
+        const item = inventory.find(i => i.id === itemId);
+        if (!item) return;
+        liked.push({ id: item.id, name: item.name, category: item.category, image: item.image, quantity: 1 });
+        btn.textContent = '❤️';
+        btn.classList.add('liked-animation');
+        setTimeout(() => {
+          btn.classList.remove('liked-animation');
+        }, 300);
+      }
+      renderLiked();
     }
     
     // Update datalists for New Item suggestions
@@ -666,7 +706,7 @@
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const base64 = e.target.result.split(',')[1]; // remove data prefix
+          const base64 = e.target.result.split(',')[1];
           try {
             const formData = new URLSearchParams();
             formData.append('key', '3f1b77bcc1d4b241c00c5c3f27216041');
@@ -690,7 +730,7 @@
       });
     }
     
-    // New Item: Add item with image upload via imgbb
+    // New Item: Add item with image upload
     btnNewAdd.addEventListener('click', () => {
       const name = newName.value.trim();
       const category = newCategory.value.trim();
@@ -699,7 +739,7 @@
         alert('Please fill in all fields correctly.');
         return;
       }
-      if (isDuplicateItem(name)) {
+      if (inventory.some(item => item.name.toLowerCase() === name.toLowerCase())) {
         alert('An item with that name already exists.');
         return;
       }
@@ -831,7 +871,7 @@
         }
         html += `<h3>${item.name}</h3><p>Category: ${item.category}</p><p>Quantity: ${item.quantity}</p>`;
         card.innerHTML = html;
-        // Card actions: Edit, Remove, and Like (heart icon)
+        // Card Actions: Edit, Remove, and Like
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'card-actions';
         const editBtn = document.createElement('button');
@@ -843,9 +883,10 @@
         removeBtn.title = 'Remove Item';
         removeBtn.addEventListener('click', () => openConfirmModal(item.id, item.name));
         const likedBtn = document.createElement('button');
-        likedBtn.textContent = '❤️';
-        likedBtn.title = 'Like Item';
-        likedBtn.addEventListener('click', () => addToLiked(item.id));
+        // Set icon based on liked status: if liked then filled, otherwise outline
+        likedBtn.textContent = isItemLiked(item.id) ? '❤️' : '🤍';
+        likedBtn.title = 'Toggle Like';
+        likedBtn.addEventListener('click', () => toggleLike(item.id, likedBtn));
         actionsDiv.appendChild(editBtn);
         actionsDiv.appendChild(removeBtn);
         actionsDiv.appendChild(likedBtn);
@@ -854,18 +895,33 @@
       });
     }
     
-    // Liked: Add item to liked list (or increment quantity)
-    function addToLiked(itemId) {
-      const item = inventory.find(i => i.id === itemId);
-      if (!item) return;
-      const existing = liked.find(i => i.id === itemId);
-      if (existing) {
-        existing.quantity += 1;
+    // Check if an item is liked
+    function isItemLiked(itemId) {
+      return liked.some(i => i.id === itemId);
+    }
+    
+    // Toggle like status with animation
+    function toggleLike(itemId, btn) {
+      if (isItemLiked(itemId)) {
+        // Unlike
+        liked = liked.filter(i => i.id !== itemId);
+        btn.classList.add('unliked-animation');
+        setTimeout(() => {
+          btn.classList.remove('unliked-animation');
+          btn.textContent = '🤍';
+        }, 300);
       } else {
+        // Like
+        const item = inventory.find(i => i.id === itemId);
+        if (!item) return;
         liked.push({ id: item.id, name: item.name, category: item.category, image: item.image, quantity: 1 });
+        btn.textContent = '❤️';
+        btn.classList.add('liked-animation');
+        setTimeout(() => {
+          btn.classList.remove('liked-animation');
+        }, 300);
       }
       renderLiked();
-      alert(`"${item.name}" has been added to your liked items.`);
     }
     
     // Liked: Render liked items in Liked Tab
@@ -921,7 +977,7 @@
       confirmModal.classList.remove('active');
     });
     
-    // Edit Modal for Inventory (Name & Category Only)
+    // Edit Modal for Inventory
     function openEditModal(itemId) {
       currentEditId = itemId;
       const item = inventory.find(i => i.id === itemId);
@@ -962,7 +1018,7 @@
       editModal.classList.remove('active');
     });
     
-    // Initialization: Only initialize normal app if no share parameters exist
+    // Initialization functions
     function initializeApp() {
       renderCategoryTabs();
       updateInOutCategories();
