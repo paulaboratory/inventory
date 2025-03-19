@@ -142,7 +142,7 @@
     .card-actions button:hover {
       color: #0056b3;
     }
-    /* Liked Items (previously Cart) */
+    /* Liked Items Styles */
     #liked-list {
       margin-top: 10px;
     }
@@ -345,7 +345,7 @@
       </div>
     </div>
     
-    <!-- Main Tabs (Inventory, In/Out Items, New Item, Liked) -->
+    <!-- Main Tabs: Inventory, In/Out Items, New Item, Liked -->
     <div class="tabs">
       <div id="tab-inventory" class="tab active">Inventory</div>
       <div id="tab-inout" class="tab">In/Out Items</div>
@@ -425,7 +425,7 @@
     </div>
   </div>
   
-  <!-- Edit Modal for Editing an Item (Name & Category Only) -->
+  <!-- Edit Modal for Inventory (Name & Category Only) -->
   <div id="edit-modal" class="modal">
     <div class="modal-content">
       <h2>Edit Item</h2>
@@ -447,7 +447,7 @@
   <script>
     // Global Variables
     let inventory = [];
-    let liked = [];  // Renamed from cart to liked
+    let liked = []; // Liked items array
     let nextId = 1;
     let activeCategoryTab = "All";
     let currentRemoveId = null;
@@ -516,7 +516,7 @@
       nightModeToggle.textContent = document.body.classList.contains('night-mode') ? '☀️' : '🌙';
     });
     
-    // New "Share Liked" Button in Liked Tab
+    // Share Liked Button
     const btnShareLiked = document.getElementById('btn-share-liked');
     btnShareLiked.addEventListener('click', () => {
       const dataStr = JSON.stringify(liked);
@@ -529,7 +529,7 @@
       });
     });
     
-    // On page load, check for shared data parameters ("data" for inventory, "likeddata" for liked items)
+    // Load shared data if present; return true if a share parameter was found
     function loadSharedData() {
       const params = new URLSearchParams(window.location.search);
       const likedDataParam = params.get('likeddata');
@@ -540,7 +540,7 @@
           const sharedLiked = JSON.parse(decoded);
           if (Array.isArray(sharedLiked)) {
             liked = sharedLiked;
-            // Hide all tabs except Liked view (read-only)
+            // Hide all tabs except Liked view and related buttons
             document.getElementById('tab-inventory').style.display = 'none';
             document.getElementById('tab-inout').style.display = 'none';
             document.getElementById('tab-new').style.display = 'none';
@@ -552,6 +552,7 @@
             document.getElementById('btn-share').style.display = 'none';
             // Activate Liked tab
             document.getElementById('tab-liked').click();
+            return true;
           }
         } catch (err) {
           console.error('Error decoding shared liked data:', err);
@@ -573,13 +574,14 @@
             document.getElementById('btn-share').style.display = 'none';
             // Activate Inventory tab
             document.getElementById('tab-inventory').click();
+            return true;
           }
         } catch (err) {
           console.error('Error decoding shared inventory:', err);
         }
       }
+      return false;
     }
-    window.addEventListener('load', loadSharedData);
     
     // Main Tab Switching
     const tabs = document.querySelectorAll('.tab');
@@ -607,9 +609,6 @@
     // DOM Elements for Inventory Tab
     const categoryTabsDiv = document.getElementById('category-tabs');
     const inventoryListDiv = document.getElementById('inventory-list');
-    
-    // DOM Elements for Liked Tab
-    const likedListDiv = document.getElementById('liked-list');
     
     // DOM Elements for In/Out Items Tab
     const inoutCategorySelect = document.getElementById('inout-category');
@@ -667,7 +666,7 @@
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const base64 = e.target.result.split(',')[1];
+          const base64 = e.target.result.split(',')[1]; // remove data prefix
           try {
             const formData = new URLSearchParams();
             formData.append('key', '3f1b77bcc1d4b241c00c5c3f27216041');
@@ -832,7 +831,7 @@
         }
         html += `<h3>${item.name}</h3><p>Category: ${item.category}</p><p>Quantity: ${item.quantity}</p>`;
         card.innerHTML = html;
-        // Card actions: Edit, Remove, and Add to Liked
+        // Card actions: Edit, Remove, and Like (heart icon)
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'card-actions';
         const editBtn = document.createElement('button');
@@ -855,7 +854,7 @@
       });
     }
     
-    // Liked: Add item to liked list (if exists, increment quantity)
+    // Liked: Add item to liked list (or increment quantity)
     function addToLiked(itemId) {
       const item = inventory.find(i => i.id === itemId);
       if (!item) return;
@@ -963,250 +962,21 @@
       editModal.classList.remove('active');
     });
     
-    // On page load, check if a share link for inventory or liked items is provided.
-    // If "likeddata" exists, load the shared liked items and show only Liked view (read-only).
-    function loadSharedData() {
-      const params = new URLSearchParams(window.location.search);
-      const likedDataParam = params.get('likeddata');
-      const dataParam = params.get('data');
-      if (likedDataParam) {
-        try {
-          const decoded = atob(likedDataParam);
-          const sharedLiked = JSON.parse(decoded);
-          if (Array.isArray(sharedLiked)) {
-            liked = sharedLiked;
-            // Hide all tabs except Liked view
-            document.getElementById('tab-inventory').style.display = 'none';
-            document.getElementById('tab-inout').style.display = 'none';
-            document.getElementById('tab-new').style.display = 'none';
-            document.getElementById('content-inventory').style.display = 'none';
-            document.getElementById('content-inout').style.display = 'none';
-            document.getElementById('content-new').style.display = 'none';
-            document.getElementById('btn-save-backup').style.display = 'none';
-            document.getElementById('btn-load-backup').style.display = 'none';
-            document.getElementById('btn-share').style.display = 'none';
-            // Activate Liked tab
-            document.getElementById('tab-liked').click();
-          }
-        } catch (err) {
-          console.error('Error decoding shared liked data:', err);
-        }
-      } else if (dataParam) {
-        try {
-          const decoded = atob(dataParam);
-          const sharedInventory = JSON.parse(decoded);
-          if (Array.isArray(sharedInventory)) {
-            inventory = sharedInventory;
-            nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
-            // Hide non-inventory features for shared view
-            document.getElementById('tab-inout').style.display = 'none';
-            document.getElementById('tab-new').style.display = 'none';
-            document.getElementById('content-inout').style.display = 'none';
-            document.getElementById('content-new').style.display = 'none';
-            document.getElementById('btn-save-backup').style.display = 'none';
-            document.getElementById('btn-load-backup').style.display = 'none';
-            document.getElementById('btn-share').style.display = 'none';
-            // Activate Inventory tab
-            document.getElementById('tab-inventory').click();
-          }
-        } catch (err) {
-          console.error('Error decoding shared inventory:', err);
-        }
-      }
-    }
-    window.addEventListener('load', () => {
-      loadSharedData();
-      // Only initialize normal app if no share params exist.
-      const params = new URLSearchParams(window.location.search);
-      if (!params.get('data') && !params.get('likeddata')) {
-        renderCategoryTabs();
-        updateInOutCategories();
-        updateInOutItems();
-        updateInventoryDisplay();
-        updateNewItemDatalists();
-      }
-    });
-    
-    // Main Tab Switching
-    const tabs = document.querySelectorAll('.tab');
-    const contents = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        contents.forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        const contentId = 'content-' + tab.id.split('-')[1];
-        document.getElementById(contentId).classList.add('active');
-        if (tab.id === 'tab-inventory' || tab.id === 'tab-inout' || tab.id === 'tab-liked') {
-          renderCategoryTabs();
-          updateInventoryDisplay();
-          updateInOutCategories();
-          updateInOutItems();
-          updateNewItemDatalists();
-          if (tab.id === 'tab-liked') {
-            renderLiked();
-          }
-        }
-      });
-    });
-    
-    // DOM Elements for Inventory Tab
-    const categoryTabsDiv = document.getElementById('category-tabs');
-    const inventoryListDiv = document.getElementById('inventory-list');
-    
-    // DOM Elements for Liked Tab
-    // (liked-list is already in the HTML as id "liked-list")
-    
-    // DOM Elements for In/Out Items Tab
-    const inoutCategorySelect = document.getElementById('inout-category');
-    const inoutItemSelect = document.getElementById('inout-item');
-    const inoutQty = document.getElementById('inout-qty');
-    const btnAdd = document.getElementById('btn-add');
-    const btnRemove = document.getElementById('btn-remove');
-    
-    // DOM Elements for New Item Tab
-    const newName = document.getElementById('new-name');
-    const newCategory = document.getElementById('new-category');
-    const newQty = document.getElementById('new-qty');
-    const newImage = document.getElementById('new-image');
-    const btnNewAdd = document.getElementById('btn-new-add');
-    const nameList = document.getElementById('nameList');
-    const categoryList = document.getElementById('categoryList');
-    
-    // DOM Elements for Modals
-    const confirmModal = document.getElementById('confirm-modal');
-    const confirmMessage = document.getElementById('confirm-message');
-    const confirmOk = document.getElementById('confirm-ok');
-    const confirmCancel = document.getElementById('confirm-cancel');
-    
-    const editModal = document.getElementById('edit-modal');
-    const editName = document.getElementById('edit-name');
-    const editCategory = document.getElementById('edit-category');
-    const editSave = document.getElementById('edit-save');
-    const editCancel = document.getElementById('edit-cancel');
-    
-    // Add to Liked: When user clicks the heart icon on an inventory card
-    function addToLiked(itemId) {
-      const item = inventory.find(i => i.id === itemId);
-      if (!item) return;
-      const existing = liked.find(i => i.id === itemId);
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        liked.push({ id: item.id, name: item.name, category: item.category, image: item.image, quantity: 1 });
-      }
-      renderLiked();
-      alert(`"${item.name}" has been added to your liked items.`);
-    }
-    
-    // Render Liked Items in Liked Tab
-    function renderLiked() {
-      const likedListDiv = document.getElementById('liked-list');
-      likedListDiv.innerHTML = '';
-      if (liked.length === 0) {
-        likedListDiv.innerHTML = '<p class="error-message">You have not liked any items yet.</p>';
-        return;
-      }
-      liked.forEach(item => {
-        const likedDiv = document.createElement('div');
-        likedDiv.className = 'liked-item';
-        let html = '';
-        if (item.image) {
-          html += `<img src="${item.image}" alt="${item.name}" style="width:60px; height:60px; object-fit:cover; border-radius:4px; margin-right:10px;">`;
-        }
-        html += `<strong>${item.name}</strong> (${item.category}) - Quantity: ${item.quantity}`;
-        likedDiv.innerHTML = html;
-        const removeBtn = document.createElement('button');
-        removeBtn.textContent = 'Remove';
-        removeBtn.style.marginLeft = '10px';
-        removeBtn.addEventListener('click', () => {
-          liked = liked.filter(i => i.id !== item.id);
-          renderLiked();
-        });
-        likedDiv.appendChild(removeBtn);
-        likedListDiv.appendChild(likedDiv);
-      });
-    }
-    
-    // Confirmation Modal for Inventory Removal
-    function openConfirmModal(itemId, itemName) {
-      currentRemoveId = itemId;
-      confirmMessage.textContent = `Are you sure you want to remove "${itemName}"?`;
-      confirmModal.classList.add('active');
-    }
-    
-    confirmOk.addEventListener('click', () => {
-      if (currentRemoveId !== null) {
-        inventory = inventory.filter(i => i.id !== currentRemoveId);
-        updateInventoryDisplay();
-        updateInOutCategories();
-        updateInOutItems();
-        updateNewItemDatalists();
-        currentRemoveId = null;
-      }
-      confirmModal.classList.remove('active');
-    });
-    
-    confirmCancel.addEventListener('click', () => {
-      currentRemoveId = null;
-      confirmModal.classList.remove('active');
-    });
-    
-    // Edit Modal for Inventory (Name & Category Only)
-    function openEditModal(itemId) {
-      currentEditId = itemId;
-      const item = inventory.find(i => i.id === itemId);
-      if (!item) return;
-      editName.value = item.name;
-      editCategory.value = item.category;
-      editModal.classList.add('active');
-    }
-    
-    editSave.addEventListener('click', () => {
-      const newNameVal = editName.value.trim();
-      const newCategoryVal = editCategory.value.trim();
-      if (newNameVal === '' || newCategoryVal === '') {
-        alert('Please fill in all fields correctly.');
-        return;
-      }
-      const duplicate = inventory.find(i => i.name.toLowerCase() === newNameVal.toLowerCase() && i.id !== currentEditId);
-      if (duplicate) {
-        alert('Another item with that name already exists.');
-        return;
-      }
-      const item = inventory.find(i => i.id === currentEditId);
-      if (item) {
-        item.name = newNameVal;
-        item.category = newCategoryVal;
-      }
-      editModal.classList.remove('active');
-      currentEditId = null;
+    // Initialization: Only initialize normal app if no share parameters exist
+    function initializeApp() {
       renderCategoryTabs();
-      updateInventoryDisplay();
       updateInOutCategories();
       updateInOutItems();
+      updateInventoryDisplay();
       updateNewItemDatalists();
-    });
+    }
     
-    editCancel.addEventListener('click', () => {
-      currentEditId = null;
-      editModal.classList.remove('active');
-    });
-    
-    // On page load, check for share parameters ("data" for inventory, "likeddata" for liked items)
-    function initializeApp() {
+    window.addEventListener('load', () => {
       const params = new URLSearchParams(window.location.search);
       if (!params.get('data') && !params.get('likeddata')) {
-        renderCategoryTabs();
-        updateInOutCategories();
-        updateInOutItems();
-        updateInventoryDisplay();
-        updateNewItemDatalists();
+        initializeApp();
       }
-    }
-    window.addEventListener('load', () => {
       loadSharedData();
-      initializeApp();
     });
   </script>
 </body>
