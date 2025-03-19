@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Inventory App with Cart & Share</title>
+  <title>Inventory App with Liked Items & Share</title>
   <style>
     /* Base Styles */
     body {
@@ -20,7 +20,7 @@
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    /* Header */
+    /* Header with Title and Icon Buttons */
     .header {
       display: flex;
       justify-content: space-between;
@@ -71,7 +71,7 @@
     .tab-content.active {
       display: block;
     }
-    /* Category Sub-Tabs */
+    /* Category Sub-Tabs in Inventory Tab */
     .sub-tabs {
       display: flex;
       gap: 10px;
@@ -142,26 +142,26 @@
     .card-actions button:hover {
       color: #0056b3;
     }
-    /* Cart Styles */
-    #cart-list {
+    /* Liked Items (previously Cart) */
+    #liked-list {
       margin-top: 10px;
     }
-    .cart-item {
+    .liked-item {
       border: 1px solid #ddd;
       border-radius: 4px;
       padding: 8px;
       margin-bottom: 8px;
       background: #fafafa;
     }
-    .cart-item h4 {
+    .liked-item h4 {
       margin: 0 0 5px 0;
     }
-    .cart-item button {
+    .liked-item button {
       font-size: 0.9em;
       padding: 4px 8px;
       margin-top: 5px;
     }
-    #btn-share-cart {
+    #btn-share-liked {
       margin-bottom: 10px;
       padding: 8px 12px;
       font-size: 1em;
@@ -172,7 +172,7 @@
       border-radius: 4px;
       transition: background 0.3s;
     }
-    #btn-share-cart:hover {
+    #btn-share-liked:hover {
       background: #0056b3;
     }
     /* Modal Styles */
@@ -345,12 +345,12 @@
       </div>
     </div>
     
-    <!-- Main Tabs -->
+    <!-- Main Tabs (Inventory, In/Out Items, New Item, Liked) -->
     <div class="tabs">
       <div id="tab-inventory" class="tab active">Inventory</div>
-      <div id="tab-cart" class="tab">Cart</div>
       <div id="tab-inout" class="tab">In/Out Items</div>
       <div id="tab-new" class="tab">New Item</div>
+      <div id="tab-liked" class="tab">Liked</div>
     </div>
     
     <!-- Inventory Tab -->
@@ -360,13 +360,6 @@
       <div id="category-tabs" class="sub-tabs"></div>
       <!-- Inventory List -->
       <div id="inventory-list"></div>
-    </div>
-    
-    <!-- Cart Tab -->
-    <div id="content-cart" class="tab-content">
-      <h2>Cart</h2>
-      <button id="btn-share-cart">Share Cart</button>
-      <div id="cart-list"></div>
     </div>
     
     <!-- In/Out Items Tab -->
@@ -411,6 +404,13 @@
       </div>
       <button id="btn-new-add">Add New Item</button>
     </div>
+    
+    <!-- Liked Tab -->
+    <div id="content-liked" class="tab-content">
+      <h2>Liked</h2>
+      <button id="btn-share-liked">Share Liked</button>
+      <div id="liked-list"></div>
+    </div>
   </div>
   
   <!-- Confirmation Modal for Removal -->
@@ -447,7 +447,7 @@
   <script>
     // Global Variables
     let inventory = [];
-    let cart = [];
+    let liked = [];  // Renamed from cart to liked
     let nextId = 1;
     let activeCategoryTab = "All";
     let currentRemoveId = null;
@@ -516,31 +516,31 @@
       nightModeToggle.textContent = document.body.classList.contains('night-mode') ? '☀️' : '🌙';
     });
     
-    // New "Share Cart" Button in Cart Tab
-    const btnShareCart = document.getElementById('btn-share-cart');
-    btnShareCart.addEventListener('click', () => {
-      const dataStr = JSON.stringify(cart);
+    // New "Share Liked" Button in Liked Tab
+    const btnShareLiked = document.getElementById('btn-share-liked');
+    btnShareLiked.addEventListener('click', () => {
+      const dataStr = JSON.stringify(liked);
       const encodedData = btoa(dataStr);
-      const shareableLink = window.location.origin + window.location.pathname + '?cartdata=' + encodeURIComponent(encodedData);
+      const shareableLink = window.location.origin + window.location.pathname + '?likeddata=' + encodeURIComponent(encodedData);
       navigator.clipboard.writeText(shareableLink).then(() => {
-        alert('Shareable cart link copied to clipboard:\n' + shareableLink);
+        alert('Shareable liked link copied to clipboard:\n' + shareableLink);
       }).catch(err => {
         prompt('Copy this link:', shareableLink);
       });
     });
     
-    // On page load, check for share parameters ("data" or "cartdata")
+    // On page load, check for shared data parameters ("data" for inventory, "likeddata" for liked items)
     function loadSharedData() {
       const params = new URLSearchParams(window.location.search);
-      const cartDataParam = params.get('cartdata');
+      const likedDataParam = params.get('likeddata');
       const dataParam = params.get('data');
-      if (cartDataParam) {
+      if (likedDataParam) {
         try {
-          const decoded = atob(cartDataParam);
-          const sharedCart = JSON.parse(decoded);
-          if (Array.isArray(sharedCart)) {
-            cart = sharedCart;
-            // Hide all tabs except Cart and related controls
+          const decoded = atob(likedDataParam);
+          const sharedLiked = JSON.parse(decoded);
+          if (Array.isArray(sharedLiked)) {
+            liked = sharedLiked;
+            // Hide all tabs except Liked view (read-only)
             document.getElementById('tab-inventory').style.display = 'none';
             document.getElementById('tab-inout').style.display = 'none';
             document.getElementById('tab-new').style.display = 'none';
@@ -550,11 +550,11 @@
             document.getElementById('btn-save-backup').style.display = 'none';
             document.getElementById('btn-load-backup').style.display = 'none';
             document.getElementById('btn-share').style.display = 'none';
-            // Activate Cart tab
-            document.getElementById('tab-cart').click();
+            // Activate Liked tab
+            document.getElementById('tab-liked').click();
           }
         } catch (err) {
-          console.error('Error decoding shared cart:', err);
+          console.error('Error decoding shared liked data:', err);
         }
       } else if (dataParam) {
         try {
@@ -591,14 +591,14 @@
         tab.classList.add('active');
         const contentId = 'content-' + tab.id.split('-')[1];
         document.getElementById(contentId).classList.add('active');
-        if (tab.id === 'tab-inventory' || tab.id === 'tab-inout' || tab.id === 'tab-cart') {
+        if (tab.id === 'tab-inventory' || tab.id === 'tab-inout' || tab.id === 'tab-liked') {
           renderCategoryTabs();
           updateInventoryDisplay();
           updateInOutCategories();
           updateInOutItems();
           updateNewItemDatalists();
-          if (tab.id === 'tab-cart') {
-            renderCart();
+          if (tab.id === 'tab-liked') {
+            renderLiked();
           }
         }
       });
@@ -607,6 +607,9 @@
     // DOM Elements for Inventory Tab
     const categoryTabsDiv = document.getElementById('category-tabs');
     const inventoryListDiv = document.getElementById('inventory-list');
+    
+    // DOM Elements for Liked Tab
+    const likedListDiv = document.getElementById('liked-list');
     
     // DOM Elements for In/Out Items Tab
     const inoutCategorySelect = document.getElementById('inout-category');
@@ -641,7 +644,7 @@
       return inventory.some(item => item.name.toLowerCase() === name.toLowerCase());
     }
     
-    // Update datalists for New Item Tab suggestions
+    // Update datalists for New Item suggestions
     function updateNewItemDatalists() {
       nameList.innerHTML = '';
       categoryList.innerHTML = '';
@@ -659,12 +662,12 @@
       });
     }
     
-    // Upload image to imgbb and return a promise that resolves with the URL
+    // Upload image to imgbb
     function uploadImageToImgbb(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const base64 = e.target.result.split(',')[1]; // remove data prefix
+          const base64 = e.target.result.split(',')[1];
           try {
             const formData = new URLSearchParams();
             formData.append('key', '3f1b77bcc1d4b241c00c5c3f27216041');
@@ -829,7 +832,7 @@
         }
         html += `<h3>${item.name}</h3><p>Category: ${item.category}</p><p>Quantity: ${item.quantity}</p>`;
         card.innerHTML = html;
-        // Card Actions: Edit, Remove, Add to Cart
+        // Card actions: Edit, Remove, and Add to Liked
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'card-actions';
         const editBtn = document.createElement('button');
@@ -840,58 +843,58 @@
         removeBtn.textContent = '🗑️';
         removeBtn.title = 'Remove Item';
         removeBtn.addEventListener('click', () => openConfirmModal(item.id, item.name));
-        const cartBtn = document.createElement('button');
-        cartBtn.textContent = '🛒';
-        cartBtn.title = 'Add to Cart';
-        cartBtn.addEventListener('click', () => addToCart(item.id));
+        const likedBtn = document.createElement('button');
+        likedBtn.textContent = '❤️';
+        likedBtn.title = 'Like Item';
+        likedBtn.addEventListener('click', () => addToLiked(item.id));
         actionsDiv.appendChild(editBtn);
         actionsDiv.appendChild(removeBtn);
-        actionsDiv.appendChild(cartBtn);
+        actionsDiv.appendChild(likedBtn);
         card.insertAdjacentElement('afterbegin', actionsDiv);
         inventoryListDiv.appendChild(card);
       });
     }
     
-    // Add to Cart function
-    function addToCart(itemId) {
+    // Liked: Add item to liked list (if exists, increment quantity)
+    function addToLiked(itemId) {
       const item = inventory.find(i => i.id === itemId);
       if (!item) return;
-      const existing = cart.find(i => i.id === itemId);
+      const existing = liked.find(i => i.id === itemId);
       if (existing) {
         existing.quantity += 1;
       } else {
-        cart.push({ id: item.id, name: item.name, category: item.category, image: item.image, quantity: 1 });
+        liked.push({ id: item.id, name: item.name, category: item.category, image: item.image, quantity: 1 });
       }
-      renderCart();
-      alert(`"${item.name}" has been added to your cart.`);
+      renderLiked();
+      alert(`"${item.name}" has been added to your liked items.`);
     }
     
-    // Render Cart Items
-    function renderCart() {
-      const cartListDiv = document.getElementById('cart-list');
-      cartListDiv.innerHTML = '';
-      if (cart.length === 0) {
-        cartListDiv.innerHTML = '<p class="error-message">Your cart is empty.</p>';
+    // Liked: Render liked items in Liked Tab
+    function renderLiked() {
+      const likedListDiv = document.getElementById('liked-list');
+      likedListDiv.innerHTML = '';
+      if (liked.length === 0) {
+        likedListDiv.innerHTML = '<p class="error-message">You have not liked any items yet.</p>';
         return;
       }
-      cart.forEach(item => {
-        const cartDiv = document.createElement('div');
-        cartDiv.className = 'cart-item';
+      liked.forEach(item => {
+        const likedDiv = document.createElement('div');
+        likedDiv.className = 'liked-item';
         let html = '';
         if (item.image) {
           html += `<img src="${item.image}" alt="${item.name}" style="width:60px; height:60px; object-fit:cover; border-radius:4px; margin-right:10px;">`;
         }
         html += `<strong>${item.name}</strong> (${item.category}) - Quantity: ${item.quantity}`;
-        cartDiv.innerHTML = html;
-        const removeCartBtn = document.createElement('button');
-        removeCartBtn.textContent = 'Remove';
-        removeCartBtn.style.marginLeft = '10px';
-        removeCartBtn.addEventListener('click', () => {
-          cart = cart.filter(i => i.id !== item.id);
-          renderCart();
+        likedDiv.innerHTML = html;
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Remove';
+        removeBtn.style.marginLeft = '10px';
+        removeBtn.addEventListener('click', () => {
+          liked = liked.filter(i => i.id !== item.id);
+          renderLiked();
         });
-        cartDiv.appendChild(removeCartBtn);
-        cartListDiv.appendChild(cartDiv);
+        likedDiv.appendChild(removeBtn);
+        likedListDiv.appendChild(likedDiv);
       });
     }
     
@@ -960,11 +963,240 @@
       editModal.classList.remove('active');
     });
     
-    // On page load, initialize or load shared data
-    function initializeApp() {
-      // Only initialize if not in share mode (i.e. no 'data' or 'cartdata' query param)
+    // On page load, check if a share link for inventory or liked items is provided.
+    // If "likeddata" exists, load the shared liked items and show only Liked view (read-only).
+    function loadSharedData() {
       const params = new URLSearchParams(window.location.search);
-      if (!params.get('data') && !params.get('cartdata')) {
+      const likedDataParam = params.get('likeddata');
+      const dataParam = params.get('data');
+      if (likedDataParam) {
+        try {
+          const decoded = atob(likedDataParam);
+          const sharedLiked = JSON.parse(decoded);
+          if (Array.isArray(sharedLiked)) {
+            liked = sharedLiked;
+            // Hide all tabs except Liked view
+            document.getElementById('tab-inventory').style.display = 'none';
+            document.getElementById('tab-inout').style.display = 'none';
+            document.getElementById('tab-new').style.display = 'none';
+            document.getElementById('content-inventory').style.display = 'none';
+            document.getElementById('content-inout').style.display = 'none';
+            document.getElementById('content-new').style.display = 'none';
+            document.getElementById('btn-save-backup').style.display = 'none';
+            document.getElementById('btn-load-backup').style.display = 'none';
+            document.getElementById('btn-share').style.display = 'none';
+            // Activate Liked tab
+            document.getElementById('tab-liked').click();
+          }
+        } catch (err) {
+          console.error('Error decoding shared liked data:', err);
+        }
+      } else if (dataParam) {
+        try {
+          const decoded = atob(dataParam);
+          const sharedInventory = JSON.parse(decoded);
+          if (Array.isArray(sharedInventory)) {
+            inventory = sharedInventory;
+            nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
+            // Hide non-inventory features for shared view
+            document.getElementById('tab-inout').style.display = 'none';
+            document.getElementById('tab-new').style.display = 'none';
+            document.getElementById('content-inout').style.display = 'none';
+            document.getElementById('content-new').style.display = 'none';
+            document.getElementById('btn-save-backup').style.display = 'none';
+            document.getElementById('btn-load-backup').style.display = 'none';
+            document.getElementById('btn-share').style.display = 'none';
+            // Activate Inventory tab
+            document.getElementById('tab-inventory').click();
+          }
+        } catch (err) {
+          console.error('Error decoding shared inventory:', err);
+        }
+      }
+    }
+    window.addEventListener('load', () => {
+      loadSharedData();
+      // Only initialize normal app if no share params exist.
+      const params = new URLSearchParams(window.location.search);
+      if (!params.get('data') && !params.get('likeddata')) {
+        renderCategoryTabs();
+        updateInOutCategories();
+        updateInOutItems();
+        updateInventoryDisplay();
+        updateNewItemDatalists();
+      }
+    });
+    
+    // Main Tab Switching
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        const contentId = 'content-' + tab.id.split('-')[1];
+        document.getElementById(contentId).classList.add('active');
+        if (tab.id === 'tab-inventory' || tab.id === 'tab-inout' || tab.id === 'tab-liked') {
+          renderCategoryTabs();
+          updateInventoryDisplay();
+          updateInOutCategories();
+          updateInOutItems();
+          updateNewItemDatalists();
+          if (tab.id === 'tab-liked') {
+            renderLiked();
+          }
+        }
+      });
+    });
+    
+    // DOM Elements for Inventory Tab
+    const categoryTabsDiv = document.getElementById('category-tabs');
+    const inventoryListDiv = document.getElementById('inventory-list');
+    
+    // DOM Elements for Liked Tab
+    // (liked-list is already in the HTML as id "liked-list")
+    
+    // DOM Elements for In/Out Items Tab
+    const inoutCategorySelect = document.getElementById('inout-category');
+    const inoutItemSelect = document.getElementById('inout-item');
+    const inoutQty = document.getElementById('inout-qty');
+    const btnAdd = document.getElementById('btn-add');
+    const btnRemove = document.getElementById('btn-remove');
+    
+    // DOM Elements for New Item Tab
+    const newName = document.getElementById('new-name');
+    const newCategory = document.getElementById('new-category');
+    const newQty = document.getElementById('new-qty');
+    const newImage = document.getElementById('new-image');
+    const btnNewAdd = document.getElementById('btn-new-add');
+    const nameList = document.getElementById('nameList');
+    const categoryList = document.getElementById('categoryList');
+    
+    // DOM Elements for Modals
+    const confirmModal = document.getElementById('confirm-modal');
+    const confirmMessage = document.getElementById('confirm-message');
+    const confirmOk = document.getElementById('confirm-ok');
+    const confirmCancel = document.getElementById('confirm-cancel');
+    
+    const editModal = document.getElementById('edit-modal');
+    const editName = document.getElementById('edit-name');
+    const editCategory = document.getElementById('edit-category');
+    const editSave = document.getElementById('edit-save');
+    const editCancel = document.getElementById('edit-cancel');
+    
+    // Add to Liked: When user clicks the heart icon on an inventory card
+    function addToLiked(itemId) {
+      const item = inventory.find(i => i.id === itemId);
+      if (!item) return;
+      const existing = liked.find(i => i.id === itemId);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        liked.push({ id: item.id, name: item.name, category: item.category, image: item.image, quantity: 1 });
+      }
+      renderLiked();
+      alert(`"${item.name}" has been added to your liked items.`);
+    }
+    
+    // Render Liked Items in Liked Tab
+    function renderLiked() {
+      const likedListDiv = document.getElementById('liked-list');
+      likedListDiv.innerHTML = '';
+      if (liked.length === 0) {
+        likedListDiv.innerHTML = '<p class="error-message">You have not liked any items yet.</p>';
+        return;
+      }
+      liked.forEach(item => {
+        const likedDiv = document.createElement('div');
+        likedDiv.className = 'liked-item';
+        let html = '';
+        if (item.image) {
+          html += `<img src="${item.image}" alt="${item.name}" style="width:60px; height:60px; object-fit:cover; border-radius:4px; margin-right:10px;">`;
+        }
+        html += `<strong>${item.name}</strong> (${item.category}) - Quantity: ${item.quantity}`;
+        likedDiv.innerHTML = html;
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Remove';
+        removeBtn.style.marginLeft = '10px';
+        removeBtn.addEventListener('click', () => {
+          liked = liked.filter(i => i.id !== item.id);
+          renderLiked();
+        });
+        likedDiv.appendChild(removeBtn);
+        likedListDiv.appendChild(likedDiv);
+      });
+    }
+    
+    // Confirmation Modal for Inventory Removal
+    function openConfirmModal(itemId, itemName) {
+      currentRemoveId = itemId;
+      confirmMessage.textContent = `Are you sure you want to remove "${itemName}"?`;
+      confirmModal.classList.add('active');
+    }
+    
+    confirmOk.addEventListener('click', () => {
+      if (currentRemoveId !== null) {
+        inventory = inventory.filter(i => i.id !== currentRemoveId);
+        updateInventoryDisplay();
+        updateInOutCategories();
+        updateInOutItems();
+        updateNewItemDatalists();
+        currentRemoveId = null;
+      }
+      confirmModal.classList.remove('active');
+    });
+    
+    confirmCancel.addEventListener('click', () => {
+      currentRemoveId = null;
+      confirmModal.classList.remove('active');
+    });
+    
+    // Edit Modal for Inventory (Name & Category Only)
+    function openEditModal(itemId) {
+      currentEditId = itemId;
+      const item = inventory.find(i => i.id === itemId);
+      if (!item) return;
+      editName.value = item.name;
+      editCategory.value = item.category;
+      editModal.classList.add('active');
+    }
+    
+    editSave.addEventListener('click', () => {
+      const newNameVal = editName.value.trim();
+      const newCategoryVal = editCategory.value.trim();
+      if (newNameVal === '' || newCategoryVal === '') {
+        alert('Please fill in all fields correctly.');
+        return;
+      }
+      const duplicate = inventory.find(i => i.name.toLowerCase() === newNameVal.toLowerCase() && i.id !== currentEditId);
+      if (duplicate) {
+        alert('Another item with that name already exists.');
+        return;
+      }
+      const item = inventory.find(i => i.id === currentEditId);
+      if (item) {
+        item.name = newNameVal;
+        item.category = newCategoryVal;
+      }
+      editModal.classList.remove('active');
+      currentEditId = null;
+      renderCategoryTabs();
+      updateInventoryDisplay();
+      updateInOutCategories();
+      updateInOutItems();
+      updateNewItemDatalists();
+    });
+    
+    editCancel.addEventListener('click', () => {
+      currentEditId = null;
+      editModal.classList.remove('active');
+    });
+    
+    // On page load, check for share parameters ("data" for inventory, "likeddata" for liked items)
+    function initializeApp() {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.get('data') && !params.get('likeddata')) {
         renderCategoryTabs();
         updateInOutCategories();
         updateInOutItems();
