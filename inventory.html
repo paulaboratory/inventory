@@ -245,6 +245,12 @@
     .night-mode h1, .night-mode h2 {
       color: #fff;
     }
+    .night-mode label {
+      color: #e0e0e0;
+    }
+    .night-mode .inventory-card h3 {
+      color: #fff;
+    }
     .night-mode input, .night-mode select {
       background: #333;
       color: #e0e0e0;
@@ -468,7 +474,8 @@
       nightModeToggle.textContent = document.body.classList.contains('night-mode') ? '☀️' : '🌙';
     });
     
-    // On page load, check if a share link is provided via URL
+    // On page load, check if a share link is provided via URL.
+    // If so, load the shared inventory and hide all non-readonly features.
     function loadSharedInventory() {
       const params = new URLSearchParams(window.location.search);
       const dataParam = params.get('data');
@@ -479,11 +486,15 @@
           if (Array.isArray(sharedInventory)) {
             inventory = sharedInventory;
             nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
-            // Hide In/Out and New Item tabs for read-only view
+            // Hide non-inventory features for shared view
             document.getElementById('tab-inout').style.display = 'none';
             document.getElementById('tab-new').style.display = 'none';
             document.getElementById('content-inout').style.display = 'none';
             document.getElementById('content-new').style.display = 'none';
+            document.getElementById('btn-save-backup').style.display = 'none';
+            document.getElementById('btn-load-backup').style.display = 'none';
+            document.getElementById('btn-share').style.display = 'none';
+            // Activate Inventory tab
             document.getElementById('tab-inventory').click();
           }
         } catch (err) {
