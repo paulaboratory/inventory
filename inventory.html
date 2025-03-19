@@ -20,7 +20,7 @@
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    /* Header with Title and Icon Buttons */
+    /* Header */
     .header {
       display: flex;
       justify-content: space-between;
@@ -71,7 +71,7 @@
     .tab-content.active {
       display: block;
     }
-    /* Category Sub-Tabs in Inventory Tab */
+    /* Category Sub-Tabs */
     .sub-tabs {
       display: flex;
       gap: 10px;
@@ -161,7 +161,6 @@
       padding: 4px 8px;
       margin-top: 5px;
     }
-    /* Share Cart Button */
     #btn-share-cart {
       margin-bottom: 10px;
       padding: 8px 12px;
@@ -518,9 +517,7 @@
     });
     
     // New "Share Cart" Button in Cart Tab
-    const btnShareCart = document.createElement('button');
-    btnShareCart.id = 'btn-share-cart';
-    btnShareCart.textContent = 'Share Cart';
+    const btnShareCart = document.getElementById('btn-share-cart');
     btnShareCart.addEventListener('click', () => {
       const dataStr = JSON.stringify(cart);
       const encodedData = btoa(dataStr);
@@ -532,457 +529,7 @@
       });
     });
     
-    // On page load, check if a share link for inventory or cart is provided
-    function loadSharedData() {
-      const params = new URLSearchParams(window.location.search);
-      const cartDataParam = params.get('cartdata');
-      const dataParam = params.get('data');
-      if (cartDataParam) {
-        try {
-          const decoded = atob(cartDataParam);
-          const sharedCart = JSON.parse(decoded);
-          if (Array.isArray(sharedCart)) {
-            cart = sharedCart;
-            // Hide all tabs except Cart and only show cart view (read-only)
-            document.getElementById('tab-inventory').style.display = 'none';
-            document.getElementById('tab-inout').style.display = 'none';
-            document.getElementById('tab-new').style.display = 'none';
-            document.getElementById('content-inventory').style.display = 'none';
-            document.getElementById('content-inout').style.display = 'none';
-            document.getElementById('content-new').style.display = 'none';
-            // Activate Cart tab
-            document.getElementById('tab-cart').click();
-          }
-        } catch (err) {
-          console.error('Error decoding shared cart:', err);
-        }
-      } else if (dataParam) {
-        try {
-          const decoded = atob(dataParam);
-          const sharedInventory = JSON.parse(decoded);
-          if (Array.isArray(sharedInventory)) {
-            inventory = sharedInventory;
-            nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
-            // Hide non-inventory features for shared view
-            document.getElementById('tab-inout').style.display = 'none';
-            document.getElementById('tab-new').style.display = 'none';
-            document.getElementById('content-inout').style.display = 'none';
-            document.getElementById('content-new').style.display = 'none';
-            document.getElementById('btn-save-backup').style.display = 'none';
-            document.getElementById('btn-load-backup').style.display = 'none';
-            document.getElementById('btn-share').style.display = 'none';
-            // Activate Inventory tab
-            document.getElementById('tab-inventory').click();
-          }
-        } catch (err) {
-          console.error('Error decoding shared inventory:', err);
-        }
-      }
-    }
-    window.addEventListener('load', loadSharedData);
-    
-    // Main Tab Switching
-    const tabs = document.querySelectorAll('.tab');
-    const contents = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        contents.forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        const contentId = 'content-' + tab.id.split('-')[1];
-        document.getElementById(contentId).classList.add('active');
-        if (tab.id === 'tab-inventory' || tab.id === 'tab-inout' || tab.id === 'tab-cart') {
-          renderCategoryTabs();
-          updateInventoryDisplay();
-          updateInOutCategories();
-          updateInOutItems();
-          updateNewItemDatalists();
-          if (tab.id === 'tab-cart') {
-            renderCart();
-          }
-        }
-      });
-    });
-    
-    // DOM Elements for Inventory Tab
-    const categoryTabsDiv = document.getElementById('category-tabs');
-    const inventoryListDiv = document.getElementById('inventory-list');
-    
-    // DOM Elements for Cart Tab
-    const cartListDiv = document.createElement('div');
-    cartListDiv.id = 'cart-list';
-    // Append Share Cart button and cart list to Cart content container
-    const contentCart = document.createElement('div');
-    contentCart.id = 'content-cart';
-    contentCart.className = 'tab-content';
-    contentCart.innerHTML = '<h2>Cart</h2>';
-    contentCart.appendChild(btnShareCart);
-    contentCart.appendChild(cartListDiv);
-    // Insert the new Cart tab content into the document after Inventory content
-    document.querySelector('.container').insertAdjacentElement('beforeend', contentCart);
-    
-    // DOM Elements for In/Out Items Tab
-    const inoutCategorySelect = document.getElementById('inout-category');
-    const inoutItemSelect = document.getElementById('inout-item');
-    const inoutQty = document.getElementById('inout-qty');
-    const btnAdd = document.getElementById('btn-add');
-    const btnRemove = document.getElementById('btn-remove');
-    
-    // DOM Elements for New Item Tab
-    const newName = document.getElementById('new-name');
-    const newCategory = document.getElementById('new-category');
-    const newQty = document.getElementById('new-qty');
-    const newImage = document.getElementById('new-image');
-    const btnNewAdd = document.getElementById('btn-new-add');
-    const nameList = document.getElementById('nameList');
-    const categoryList = document.getElementById('categoryList');
-    
-    // DOM Elements for Modals
-    const confirmModal = document.getElementById('confirm-modal');
-    const confirmMessage = document.getElementById('confirm-message');
-    const confirmOk = document.getElementById('confirm-ok');
-    const confirmCancel = document.getElementById('confirm-cancel');
-    
-    const editModal = document.getElementById('edit-modal');
-    const editName = document.getElementById('edit-name');
-    const editCategory = document.getElementById('edit-category');
-    const editSave = document.getElementById('edit-save');
-    const editCancel = document.getElementById('edit-cancel');
-    
-    // Global cart array
-    let cart = [];
-    
-    // Prevent duplicate item names (case-insensitive)
-    function isDuplicateItem(name) {
-      return inventory.some(item => item.name.toLowerCase() === name.toLowerCase());
-    }
-    
-    // Function to update datalists for New Item Tab suggestions
-    function updateNewItemDatalists() {
-      nameList.innerHTML = '';
-      categoryList.innerHTML = '';
-      const names = new Set(inventory.map(item => item.name));
-      const categories = new Set(inventory.map(item => item.category));
-      names.forEach(n => {
-        const option = document.createElement('option');
-        option.value = n;
-        nameList.appendChild(option);
-      });
-      categories.forEach(c => {
-        const option = document.createElement('option');
-        option.value = c;
-        categoryList.appendChild(option);
-      });
-    }
-    
-    // Function to upload image to imgbb and return a promise that resolves with the URL
-    function uploadImageToImgbb(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const base64 = e.target.result.split(',')[1]; // remove data prefix
-          try {
-            const formData = new URLSearchParams();
-            formData.append('key', '3f1b77bcc1d4b241c00c5c3f27216041');
-            formData.append('image', base64);
-            const response = await fetch('https://api.imgbb.com/1/upload', {
-              method: 'POST',
-              body: formData
-            });
-            const result = await response.json();
-            if (result.success) {
-              resolve(result.data.display_url);
-            } else {
-              reject(result.error);
-            }
-          } catch (err) {
-            reject(err);
-          }
-        };
-        reader.onerror = err => reject(err);
-        reader.readAsDataURL(file);
-      });
-    }
-    
-    // New Item Tab: Add new item with image upload using imgbb
-    btnNewAdd.addEventListener('click', () => {
-      const name = newName.value.trim();
-      const category = newCategory.value.trim();
-      const qty = parseInt(newQty.value);
-      if (name === '' || category === '' || isNaN(qty) || qty < 1) {
-        alert('Please fill in all fields correctly.');
-        return;
-      }
-      if (isDuplicateItem(name)) {
-        alert('An item with that name already exists.');
-        return;
-      }
-      const addItemToLocal = (imageUrl) => {
-        const newItem = { id: nextId++, name, category, quantity: qty, image: imageUrl };
-        inventory.push(newItem);
-        newName.value = '';
-        newCategory.value = '';
-        newQty.value = '1';
-        newImage.value = '';
-        renderCategoryTabs();
-        updateInventoryDisplay();
-        updateInOutCategories();
-        updateInOutItems();
-        updateNewItemDatalists();
-      };
-      const file = newImage.files[0];
-      if (file) {
-        uploadImageToImgbb(file)
-          .then(url => { addItemToLocal(url); })
-          .catch(err => { alert('Image upload failed.'); console.error(err); });
-      } else {
-        addItemToLocal('');
-      }
-    });
-    
-    // In/Out Items Tab: Update Category dropdown
-    function updateInOutCategories() {
-      inoutCategorySelect.innerHTML = '';
-      const categories = new Set(inventory.map(item => item.category));
-      if (categories.size === 0) {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'No categories available';
-        inoutCategorySelect.appendChild(opt);
-        return;
-      }
-      categories.forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        inoutCategorySelect.appendChild(opt);
-      });
-      inoutCategorySelect.selectedIndex = 0;
-    }
-    
-    // In/Out Items Tab: Update Items dropdown based on selected category
-    function updateInOutItems() {
-      inoutItemSelect.innerHTML = '';
-      const selectedCategory = inoutCategorySelect.value;
-      const items = inventory.filter(item => item.category === selectedCategory);
-      if (items.length === 0) {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'No items available';
-        inoutItemSelect.appendChild(opt);
-        return;
-      }
-      items.forEach(item => {
-        const opt = document.createElement('option');
-        opt.value = item.id;
-        opt.textContent = item.name;
-        inoutItemSelect.appendChild(opt);
-      });
-    }
-    
-    inoutCategorySelect.addEventListener('change', updateInOutItems);
-    
-    // In/Out Items Tab: Increase quantity
-    btnAdd.addEventListener('click', () => {
-      const itemId = parseInt(inoutItemSelect.value);
-      const qty = parseInt(inoutQty.value);
-      if (isNaN(itemId) || isNaN(qty) || qty < 1) return;
-      const item = inventory.find(i => i.id === itemId);
-      if (item) {
-        item.quantity += qty;
-        updateInventoryDisplay();
-      }
-    });
-    
-    // In/Out Items Tab: Decrease quantity
-    btnRemove.addEventListener('click', () => {
-      const itemId = parseInt(inoutItemSelect.value);
-      const qty = parseInt(inoutQty.value);
-      if (isNaN(itemId) || isNaN(qty) || qty < 1) return;
-      const item = inventory.find(i => i.id === itemId);
-      if (item) {
-        item.quantity = Math.max(0, item.quantity - qty);
-        updateInventoryDisplay();
-      }
-    });
-    
-    // Inventory Tab: Render Category Sub-Tabs
-    function renderCategoryTabs() {
-      categoryTabsDiv.innerHTML = '';
-      const categories = new Set(inventory.map(item => item.category));
-      const tabsArr = ["All", ...categories];
-      tabsArr.forEach(cat => {
-        const tab = document.createElement('div');
-        tab.className = 'category-tab';
-        if (cat === activeCategoryTab) tab.classList.add('active');
-        tab.textContent = cat;
-        tab.addEventListener('click', () => {
-          activeCategoryTab = cat;
-          renderCategoryTabs();
-          updateInventoryDisplay();
-        });
-        categoryTabsDiv.appendChild(tab);
-      });
-    }
-    
-    // Inventory Tab: Update Inventory Display as Cards, filtered by active category
-    function updateInventoryDisplay() {
-      inventoryListDiv.innerHTML = '';
-      let itemsToDisplay = inventory;
-      if (activeCategoryTab !== "All") {
-        itemsToDisplay = inventory.filter(item => item.category === activeCategoryTab);
-      }
-      if (itemsToDisplay.length === 0) {
-        inventoryListDiv.innerHTML = '<p class="error-message">No items in this category.</p>';
-        return;
-      }
-      itemsToDisplay.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'inventory-card';
-        let html = '';
-        if (item.image) {
-          html += `<img src="${item.image}" alt="${item.name}">`;
-        }
-        html += `<h3>${item.name}</h3><p>Category: ${item.category}</p><p>Quantity: ${item.quantity}</p>`;
-        card.innerHTML = html;
-        // Add card actions: Edit, Remove, and Add to Cart
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'card-actions';
-        const editBtn = document.createElement('button');
-        editBtn.textContent = '✏️';
-        editBtn.title = 'Edit Item';
-        editBtn.addEventListener('click', () => openEditModal(item.id));
-        const removeBtn = document.createElement('button');
-        removeBtn.textContent = '🗑️';
-        removeBtn.title = 'Remove Item';
-        removeBtn.addEventListener('click', () => openConfirmModal(item.id, item.name));
-        const cartBtn = document.createElement('button');
-        cartBtn.textContent = '🛒';
-        cartBtn.title = 'Add to Cart';
-        cartBtn.addEventListener('click', () => addToCart(item.id));
-        actionsDiv.appendChild(editBtn);
-        actionsDiv.appendChild(removeBtn);
-        actionsDiv.appendChild(cartBtn);
-        card.insertAdjacentElement('afterbegin', actionsDiv);
-        inventoryListDiv.appendChild(card);
-      });
-    }
-    
-    // Cart: Add item to cart (if already exists, increment quantity)
-    function addToCart(itemId) {
-      const item = inventory.find(i => i.id === itemId);
-      if (!item) return;
-      const cartItem = cart.find(i => i.id === itemId);
-      if (cartItem) {
-        cartItem.quantity += 1;
-      } else {
-        // Add a copy with cart quantity starting at 1
-        cart.push({ id: item.id, name: item.name, category: item.category, quantity: 1, image: item.image });
-      }
-      renderCart();
-      alert(`Added "${item.name}" to cart.`);
-    }
-    
-    // Cart: Remove item from cart
-    function removeFromCart(itemId) {
-      cart = cart.filter(i => i.id !== itemId);
-      renderCart();
-    }
-    
-    // Cart: Render cart items in Cart Tab
-    function renderCart() {
-      cartListDiv.innerHTML = '';
-      if (cart.length === 0) {
-        cartListDiv.innerHTML = '<p class="error-message">Your cart is empty.</p>';
-        return;
-      }
-      cart.forEach(item => {
-        const cartDiv = document.createElement('div');
-        cartDiv.className = 'cart-item';
-        let html = '';
-        if (item.image) {
-          html += `<img src="${item.image}" alt="${item.name}" style="width:60px; height:60px; object-fit:cover; border-radius:4px; margin-right:10px;">`;
-        }
-        html += `<strong>${item.name}</strong> (${item.category}) - Quantity: ${item.quantity}`;
-        cartDiv.innerHTML = html;
-        // Add a Remove button for cart items
-        const removeCartBtn = document.createElement('button');
-        removeCartBtn.textContent = 'Remove';
-        removeCartBtn.style.marginLeft = '10px';
-        removeCartBtn.addEventListener('click', () => removeFromCart(item.id));
-        cartDiv.appendChild(removeCartBtn);
-        cartListDiv.appendChild(cartDiv);
-      });
-    }
-    
-    // Confirmation Modal for Removal (Inventory)
-    function openConfirmModal(itemId, itemName) {
-      currentRemoveId = itemId;
-      confirmMessage.textContent = `Are you sure you want to remove "${itemName}"?`;
-      confirmModal.classList.add('active');
-    }
-    
-    confirmOk.addEventListener('click', () => {
-      if (currentRemoveId !== null) {
-        inventory = inventory.filter(i => i.id !== currentRemoveId);
-        updateInventoryDisplay();
-        updateInOutCategories();
-        updateInOutItems();
-        updateNewItemDatalists();
-        currentRemoveId = null;
-      }
-      confirmModal.classList.remove('active');
-    });
-    
-    confirmCancel.addEventListener('click', () => {
-      currentRemoveId = null;
-      confirmModal.classList.remove('active');
-    });
-    
-    // Edit Modal for Editing an Item (Name & Category Only)
-    function openEditModal(itemId) {
-      currentEditId = itemId;
-      const item = inventory.find(i => i.id === itemId);
-      if (!item) return;
-      editName.value = item.name;
-      editCategory.value = item.category;
-      editModal.classList.add('active');
-    }
-    
-    editSave.addEventListener('click', () => {
-      const newNameVal = editName.value.trim();
-      const newCategoryVal = editCategory.value.trim();
-      if (newNameVal === '' || newCategoryVal === '') {
-        alert('Please fill in all fields correctly.');
-        return;
-      }
-      // Prevent duplicate names (if changed)
-      const duplicate = inventory.find(i => i.name.toLowerCase() === newNameVal.toLowerCase() && i.id !== currentEditId);
-      if (duplicate) {
-        alert('Another item with that name already exists.');
-        return;
-      }
-      const item = inventory.find(i => i.id === currentEditId);
-      if (item) {
-        item.name = newNameVal;
-        item.category = newCategoryVal;
-      }
-      editModal.classList.remove('active');
-      currentEditId = null;
-      renderCategoryTabs();
-      updateInventoryDisplay();
-      updateInOutCategories();
-      updateInOutItems();
-      updateNewItemDatalists();
-    });
-    
-    editCancel.addEventListener('click', () => {
-      currentEditId = null;
-      editModal.classList.remove('active');
-    });
-    
-    // On page load, check if a share link for inventory or cart is provided.
-    // If "cartdata" exists, load the shared cart and show only Cart view (read-only).
+    // On page load, check for share parameters ("data" or "cartdata")
     function loadSharedData() {
       const params = new URLSearchParams(window.location.search);
       const cartDataParam = params.get('cartdata');
@@ -1061,8 +608,6 @@
     const categoryTabsDiv = document.getElementById('category-tabs');
     const inventoryListDiv = document.getElementById('inventory-list');
     
-    // DOM Elements for Cart Tab (already created earlier as cartListDiv and btnShareCart)
-    
     // DOM Elements for In/Out Items Tab
     const inoutCategorySelect = document.getElementById('inout-category');
     const inoutItemSelect = document.getElementById('inout-item');
@@ -1091,7 +636,223 @@
     const editSave = document.getElementById('edit-save');
     const editCancel = document.getElementById('edit-cancel');
     
-    // Add to Cart: When user clicks the cart icon on an inventory card
+    // Prevent duplicate item names (case-insensitive)
+    function isDuplicateItem(name) {
+      return inventory.some(item => item.name.toLowerCase() === name.toLowerCase());
+    }
+    
+    // Update datalists for New Item Tab suggestions
+    function updateNewItemDatalists() {
+      nameList.innerHTML = '';
+      categoryList.innerHTML = '';
+      const names = new Set(inventory.map(item => item.name));
+      const categories = new Set(inventory.map(item => item.category));
+      names.forEach(n => {
+        const option = document.createElement('option');
+        option.value = n;
+        nameList.appendChild(option);
+      });
+      categories.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c;
+        categoryList.appendChild(option);
+      });
+    }
+    
+    // Upload image to imgbb and return a promise that resolves with the URL
+    function uploadImageToImgbb(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64 = e.target.result.split(',')[1]; // remove data prefix
+          try {
+            const formData = new URLSearchParams();
+            formData.append('key', '3f1b77bcc1d4b241c00c5c3f27216041');
+            formData.append('image', base64);
+            const response = await fetch('https://api.imgbb.com/1/upload', {
+              method: 'POST',
+              body: formData
+            });
+            const result = await response.json();
+            if (result.success) {
+              resolve(result.data.display_url);
+            } else {
+              reject(result.error);
+            }
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = err => reject(err);
+        reader.readAsDataURL(file);
+      });
+    }
+    
+    // New Item: Add item with image upload via imgbb
+    btnNewAdd.addEventListener('click', () => {
+      const name = newName.value.trim();
+      const category = newCategory.value.trim();
+      const qty = parseInt(newQty.value);
+      if (name === '' || category === '' || isNaN(qty) || qty < 1) {
+        alert('Please fill in all fields correctly.');
+        return;
+      }
+      if (isDuplicateItem(name)) {
+        alert('An item with that name already exists.');
+        return;
+      }
+      const addItemToLocal = (imageUrl) => {
+        const newItem = { id: nextId++, name, category, quantity: qty, image: imageUrl };
+        inventory.push(newItem);
+        newName.value = '';
+        newCategory.value = '';
+        newQty.value = '1';
+        newImage.value = '';
+        renderCategoryTabs();
+        updateInventoryDisplay();
+        updateInOutCategories();
+        updateInOutItems();
+        updateNewItemDatalists();
+      };
+      const file = newImage.files[0];
+      if (file) {
+        uploadImageToImgbb(file)
+          .then(url => { addItemToLocal(url); })
+          .catch(err => { alert('Image upload failed.'); console.error(err); });
+      } else {
+        addItemToLocal('');
+      }
+    });
+    
+    // In/Out Items: Update Category dropdown
+    function updateInOutCategories() {
+      inoutCategorySelect.innerHTML = '';
+      const categories = new Set(inventory.map(item => item.category));
+      if (categories.size === 0) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'No categories available';
+        inoutCategorySelect.appendChild(opt);
+        return;
+      }
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        inoutCategorySelect.appendChild(opt);
+      });
+      inoutCategorySelect.selectedIndex = 0;
+    }
+    
+    // In/Out Items: Update Items dropdown based on selected category
+    function updateInOutItems() {
+      inoutItemSelect.innerHTML = '';
+      const selectedCategory = inoutCategorySelect.value;
+      const items = inventory.filter(item => item.category === selectedCategory);
+      if (items.length === 0) {
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'No items available';
+        inoutItemSelect.appendChild(opt);
+        return;
+      }
+      items.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = item.name;
+        inoutItemSelect.appendChild(opt);
+      });
+    }
+    
+    inoutCategorySelect.addEventListener('change', updateInOutItems);
+    
+    // In/Out Items: Increase quantity
+    btnAdd.addEventListener('click', () => {
+      const itemId = parseInt(inoutItemSelect.value);
+      const qty = parseInt(inoutQty.value);
+      if (isNaN(itemId) || isNaN(qty) || qty < 1) return;
+      const item = inventory.find(i => i.id === itemId);
+      if (item) {
+        item.quantity += qty;
+        updateInventoryDisplay();
+      }
+    });
+    
+    // In/Out Items: Decrease quantity
+    btnRemove.addEventListener('click', () => {
+      const itemId = parseInt(inoutItemSelect.value);
+      const qty = parseInt(inoutQty.value);
+      if (isNaN(itemId) || isNaN(qty) || qty < 1) return;
+      const item = inventory.find(i => i.id === itemId);
+      if (item) {
+        item.quantity = Math.max(0, item.quantity - qty);
+        updateInventoryDisplay();
+      }
+    });
+    
+    // Inventory: Render Category Sub-Tabs
+    function renderCategoryTabs() {
+      categoryTabsDiv.innerHTML = '';
+      const categories = new Set(inventory.map(item => item.category));
+      const tabsArr = ["All", ...categories];
+      tabsArr.forEach(cat => {
+        const tab = document.createElement('div');
+        tab.className = 'category-tab';
+        if (cat === activeCategoryTab) tab.classList.add('active');
+        tab.textContent = cat;
+        tab.addEventListener('click', () => {
+          activeCategoryTab = cat;
+          renderCategoryTabs();
+          updateInventoryDisplay();
+        });
+        categoryTabsDiv.appendChild(tab);
+      });
+    }
+    
+    // Inventory: Update Display as Cards
+    function updateInventoryDisplay() {
+      inventoryListDiv.innerHTML = '';
+      let itemsToDisplay = inventory;
+      if (activeCategoryTab !== "All") {
+        itemsToDisplay = inventory.filter(item => item.category === activeCategoryTab);
+      }
+      if (itemsToDisplay.length === 0) {
+        inventoryListDiv.innerHTML = '<p class="error-message">No items in this category.</p>';
+        return;
+      }
+      itemsToDisplay.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'inventory-card';
+        let html = '';
+        if (item.image) {
+          html += `<img src="${item.image}" alt="${item.name}">`;
+        }
+        html += `<h3>${item.name}</h3><p>Category: ${item.category}</p><p>Quantity: ${item.quantity}</p>`;
+        card.innerHTML = html;
+        // Card Actions: Edit, Remove, Add to Cart
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'card-actions';
+        const editBtn = document.createElement('button');
+        editBtn.textContent = '✏️';
+        editBtn.title = 'Edit Item';
+        editBtn.addEventListener('click', () => openEditModal(item.id));
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '🗑️';
+        removeBtn.title = 'Remove Item';
+        removeBtn.addEventListener('click', () => openConfirmModal(item.id, item.name));
+        const cartBtn = document.createElement('button');
+        cartBtn.textContent = '🛒';
+        cartBtn.title = 'Add to Cart';
+        cartBtn.addEventListener('click', () => addToCart(item.id));
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(removeBtn);
+        actionsDiv.appendChild(cartBtn);
+        card.insertAdjacentElement('afterbegin', actionsDiv);
+        inventoryListDiv.appendChild(card);
+      });
+    }
+    
+    // Add to Cart function
     function addToCart(itemId) {
       const item = inventory.find(i => i.id === itemId);
       if (!item) return;
@@ -1099,15 +860,15 @@
       if (existing) {
         existing.quantity += 1;
       } else {
-        // Copy item data into cart with initial cart quantity 1
         cart.push({ id: item.id, name: item.name, category: item.category, image: item.image, quantity: 1 });
       }
       renderCart();
       alert(`"${item.name}" has been added to your cart.`);
     }
     
-    // Render the Cart in the Cart Tab
+    // Render Cart Items
     function renderCart() {
+      const cartListDiv = document.getElementById('cart-list');
       cartListDiv.innerHTML = '';
       if (cart.length === 0) {
         cartListDiv.innerHTML = '<p class="error-message">Your cart is empty.</p>';
@@ -1122,19 +883,19 @@
         }
         html += `<strong>${item.name}</strong> (${item.category}) - Quantity: ${item.quantity}`;
         cartDiv.innerHTML = html;
-        const removeBtn = document.createElement('button');
-        removeBtn.textContent = 'Remove';
-        removeBtn.style.marginLeft = '10px';
-        removeBtn.addEventListener('click', () => {
+        const removeCartBtn = document.createElement('button');
+        removeCartBtn.textContent = 'Remove';
+        removeCartBtn.style.marginLeft = '10px';
+        removeCartBtn.addEventListener('click', () => {
           cart = cart.filter(i => i.id !== item.id);
           renderCart();
         });
-        cartDiv.appendChild(removeBtn);
+        cartDiv.appendChild(removeCartBtn);
         cartListDiv.appendChild(cartDiv);
       });
     }
     
-    // Confirmation Modal for Removal (Inventory)
+    // Confirmation Modal for Inventory Removal
     function openConfirmModal(itemId, itemName) {
       currentRemoveId = itemId;
       confirmMessage.textContent = `Are you sure you want to remove "${itemName}"?`;
@@ -1158,7 +919,7 @@
       confirmModal.classList.remove('active');
     });
     
-    // Edit Modal for Editing an Item (Name & Category Only)
+    // Edit Modal for Inventory (Name & Category Only)
     function openEditModal(itemId) {
       currentEditId = itemId;
       const item = inventory.find(i => i.id === itemId);
@@ -1175,7 +936,6 @@
         alert('Please fill in all fields correctly.');
         return;
       }
-      // Prevent duplicate names (if changed)
       const duplicate = inventory.find(i => i.name.toLowerCase() === newNameVal.toLowerCase() && i.id !== currentEditId);
       if (duplicate) {
         alert('Another item with that name already exists.');
@@ -1200,15 +960,22 @@
       editModal.classList.remove('active');
     });
     
-    // Initialize display on page load (if not in share mode)
+    // On page load, initialize or load shared data
     function initializeApp() {
-      renderCategoryTabs();
-      updateInOutCategories();
-      updateInOutItems();
-      updateInventoryDisplay();
-      updateNewItemDatalists();
+      // Only initialize if not in share mode (i.e. no 'data' or 'cartdata' query param)
+      const params = new URLSearchParams(window.location.search);
+      if (!params.get('data') && !params.get('cartdata')) {
+        renderCategoryTabs();
+        updateInOutCategories();
+        updateInOutItems();
+        updateInventoryDisplay();
+        updateNewItemDatalists();
+      }
     }
-    window.addEventListener('load', initializeApp);
+    window.addEventListener('load', () => {
+      loadSharedData();
+      initializeApp();
+    });
   </script>
 </body>
 </html>
