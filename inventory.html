@@ -473,17 +473,16 @@
       const nightModeToggle = document.getElementById('nightModeToggle');
       const backupFileInput = document.getElementById('backup-file');
 
-      btnSaveBackup.addEventListener("click", () => {
-        // Save backup including the backup image data if available
-        const dataStr = JSON.stringify(inventory, null, 2);
-        const blob = new Blob([dataStr], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "inventory_backup.txt";
-        a.click();
-        URL.revokeObjectURL(url);
-      });
+     btnSaveBackup.addEventListener("click", () => {
+  const dataStr = JSON.stringify(inventory, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "inventory_backup.json"; // Changed extension to .json
+  a.click();
+  URL.revokeObjectURL(url);
+});
 
       btnLoadBackup.addEventListener("click", () => {
         backupFileInput.click();
