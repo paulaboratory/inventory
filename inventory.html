@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inventory App with Neumorphic Style & Export</title>
+  <title>Inventory App</title>
   <style>
-    /* ---------- NEUMORPHIC / LIGHT THEME (DEFAULT) ---------- */
+    /* ---------- LIGHT THEME ---------- */
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 20px;
-      background: #e0f7fa; /* light cyan */
-      color: #0d47a1;      /* dark blue */
+      background: #e0f7fa;
+      color: #0d47a1;
     }
     .container {
       max-width: 900px;
@@ -19,8 +19,7 @@
       padding: 20px;
       border-radius: 20px;
       background: #e0f7fa;
-      box-shadow: 10px 10px 20px rgba(0,0,0,0.1),
-                  -5px -5px 15px rgba(255,255,255,0.7);
+      box-shadow: 10px 10px 20px rgba(0,0,0,0.1), -5px -5px 15px rgba(255,255,255,0.7);
     }
     /* Header */
     .header {
@@ -31,12 +30,10 @@
     }
     .header h1 {
       margin: 0;
-      color: #0d47a1;
       font-size: 1.8em;
     }
     .header-icons {
       display: flex;
-      align-items: center;
       gap: 15px;
     }
     .header-icons button {
@@ -44,25 +41,16 @@
       border: none;
       font-size: 1.8em;
       cursor: pointer;
-      color: #0d47a1;
-      transition: transform 0.2s, box-shadow 0.2s;
-      border-radius: 50%;
-      padding: 8px;
+      transition: transform 0.2s;
     }
     .header-icons button:hover {
       transform: scale(1.1);
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.15),
-                  -2px -2px 5px rgba(255,255,255,0.7);
     }
     /* Tabs */
     .tabs {
       display: flex;
       border-bottom: 2px solid #b2ebf2;
       margin-bottom: 20px;
-      border-radius: 15px;
-      box-shadow: inset 3px 3px 6px rgba(0,0,0,0.1),
-                  inset -3px -3px 6px rgba(255,255,255,0.7);
-      overflow: hidden;
     }
     .tab {
       flex: 1;
@@ -70,16 +58,9 @@
       padding: 12px;
       cursor: pointer;
       font-weight: bold;
-      color: #0d47a1;
-      transition: background 0.3s;
     }
     .tab.active {
-      background: #ffffff;
       border-bottom: 3px solid #0d47a1;
-      color: #0d47a1;
-    }
-    .tab:hover {
-      background: #ffffff;
     }
     .tab-content {
       display: none;
@@ -87,28 +68,30 @@
     .tab-content.active {
       display: block;
     }
-    /* Category Sub-Tabs */
-    .sub-tabs {
+    /* Control Panel (for Inventory and Liked tabs) */
+    .control-panel {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
       margin-bottom: 15px;
     }
-    .category-tab {
-      padding: 8px 12px;
-      border: 1px solid #0d47a1;
-      border-radius: 10px;
-      cursor: pointer;
-      background: #e0f7fa;
-      color: #0d47a1;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.1),
-                  -2px -2px 5px rgba(255,255,255,0.7);
-      transition: background 0.3s, color 0.3s;
+    .control-panel input[type="text"],
+    .control-panel select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      flex: 1;
+      min-width: 150px;
     }
-    .category-tab.active {
-      background: #0d47a1;
-      color: #ffffff;
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2),
-                  inset -2px -2px 5px rgba(255,255,255,0.5);
+    .control-panel .view-toggle button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      background: #b2ebf2;
+      cursor: pointer;
+    }
+    .control-panel .view-toggle button.active {
+      background: #80deea;
     }
     /* Inventory Cards */
     #inventory-list {
@@ -118,11 +101,10 @@
     }
     .inventory-card {
       position: relative;
-      background: #e0f7fa;
+      background: #ffffff;
       border-radius: 15px;
       padding: 15px;
-      box-shadow: 6px 6px 12px rgba(0,0,0,0.1),
-                  -6px -6px 12px rgba(255,255,255,0.7);
+      box-shadow: 3px 3px 8px rgba(0,0,0,0.1);
       transition: transform 0.2s;
     }
     .inventory-card:hover {
@@ -138,11 +120,9 @@
     .inventory-card h3 {
       margin: 0;
       font-size: 1.2em;
-      color: #0d47a1;
     }
     .inventory-card p {
       margin: 5px 0;
-      color: #0d47a1;
     }
     .card-actions {
       position: absolute;
@@ -155,150 +135,86 @@
       background: #b2ebf2;
       border: none;
       cursor: pointer;
-      font-size: 1.2em;
-      color: #0d47a1;
-      border-radius: 8px;
-      padding: 6px;
-      box-shadow: 1px 1px 3px rgba(0,0,0,0.15),
-                  -1px -1px 3px rgba(255,255,255,0.7);
-      transition: color 0.3s, transform 0.3s;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: transform 0.2s;
     }
     .card-actions button:hover {
-      color: #0a3574;
       transform: translateY(-2px);
     }
-    /* Control Panel */
-    .control-panel {
+    /* List view */
+    .list-view .item-row {
       display: flex;
-      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+    .list-view .item-row:last-child {
+      border-bottom: none;
+    }
+    /* In/Out & New Item Forms */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      cursor: pointer;
+    }
+    /* Buttons */
+    #btn-add, #btn-remove, #btn-new-add {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #b2ebf2;
+      color: #0d47a1;
+      margin-top: 10px;
+      transition: background 0.3s;
+    }
+    #btn-add:hover, #btn-remove:hover, #btn-new-add:hover {
+      background: #80deea;
+    }
+    /* Export & Share buttons */
+    .export-btn, #btn-share-liked {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      background: #b2ebf2;
+      margin-bottom: 10px;
+      transition: background 0.3s;
+    }
+    .export-btn:hover, #btn-share-liked:hover {
+      background: #80deea;
+    }
+    /* Category Tabs */
+    .sub-tabs {
+      display: flex;
       gap: 10px;
       margin-bottom: 15px;
     }
-    .control-panel input[type="text"],
-    .control-panel select {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      flex: 1;
-      min-width: 150px;
-    }
-    .control-panel .view-toggle button {
+    .category-tab {
       padding: 8px 12px;
-      border: none;
-      border-radius: 10px;
-      background: #b2ebf2;
-      color: #0d47a1;
+      border: 1px solid #0d47a1;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s;
     }
-    .control-panel .view-toggle button.active {
-      background: #80deea;
+    .category-tab.active {
+      background: #0d47a1;
+      color: #fff;
     }
-    .control-panel .view-toggle button:hover {
-      background: #80deea;
-    }
-    /* In/Out Items Tab */
-    #content-inout .form-group {
-      margin-bottom: 16px;
-    }
-    #content-inout label {
-      font-size: 1.1em;
-      margin-bottom: 6px;
-    }
-    #content-inout select,
-    #content-inout input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
-    }
-    #content-inout button {
-      width: 48%;
-      padding: 10px;
-      border: none;
-      border-radius: 10px;
-      background: #b2ebf2;
-      color: #0d47a1;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    #content-inout button:hover {
-      background: #80deea;
-    }
-    #content-inout button:first-of-type {
-      margin-right: 4%;
-    }
-    /* New Item Tab */
-    #content-new .form-group {
-      margin-bottom: 16px;
-    }
-    #content-new label {
-      font-size: 1.1em;
-      margin-bottom: 6px;
-    }
-    #content-new input[type="text"],
-    #content-new input[type="number"],
-    #content-new input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
-    }
-    #content-new button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      background: #b2ebf2;
-      color: #0d47a1;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    #content-new button:hover {
-      background: #80deea;
-    }
-    /* Liked Tab */
-    #liked-list {
-      margin-top: 10px;
-    }
-    .liked-item {
-      border-radius: 10px;
-      padding: 8px;
-      margin-bottom: 8px;
-      background: #e0f7fa;
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1),
-                  inset -2px -2px 5px rgba(255,255,255,0.7);
-    }
-    .liked-item h4 {
-      margin: 0 0 5px 0;
-      color: #0d47a1;
-    }
-    .liked-item button {
-      font-size: 0.9em;
-      padding: 4px 8px;
-      margin-top: 5px;
-      background: #b2ebf2;
-      border-radius: 6px;
-    }
-    #btn-share-liked {
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      font-size: 1em;
-      cursor: pointer;
-      background: #b2ebf2;
-      color: #0d47a1;
-      border: none;
-      border-radius: 10px;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.1),
-                  -2px -2px 5px rgba(255,255,255,0.7);
-      transition: background 0.3s;
-    }
-    #btn-share-liked:hover {
-      background: #80deea;
-    }
-    /* Modals */
+    /* Modal */
     .modal {
       position: fixed;
       top: 0;
@@ -315,147 +231,47 @@
       display: flex;
     }
     .modal-content {
-      background: #e0f7fa;
+      background: #ffffff;
       padding: 20px;
-      border-radius: 20px;
+      border-radius: 12px;
       max-width: 400px;
       width: 90%;
-      box-shadow: 6px 6px 12px rgba(0,0,0,0.1),
-                  -6px -6px 12px rgba(255,255,255,0.7);
+      box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
     }
     .modal-content h2 {
       margin-top: 0;
-      color: #0d47a1;
     }
-    .modal-content .form-group {
-      margin-bottom: 12px;
-    }
-    .modal-content label {
-      display: block;
-      margin-bottom: 4px;
-      color: #0d47a1;
-    }
-    .modal-content input, .modal-content select {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 8px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      color: #0d47a1;
-    }
-    .modal-content .modal-buttons {
+    .modal-buttons {
       display: flex;
       justify-content: flex-end;
       gap: 10px;
     }
-    .modal-content button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #b2ebf2;
-      color: #0d47a1;
-      transition: background 0.3s;
-    }
-    .modal-content button:hover {
-      background: #80deea;
-    }
-    /* Custom Dropdown */
-    .custom-dropdown {
-      position: relative;
-    }
-    .suggestions {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: #ffffff;
-      border: 1px solid #ccc;
-      max-height: 150px;
-      overflow-y: auto;
-      z-index: 10;
-      display: none;
-    }
-    .suggestion {
-      padding: 8px;
-      cursor: pointer;
-      color: #0d47a1;
-    }
-    .suggestion:hover {
-      background: #b2ebf2;
-    }
-    /* DARK MODE */
+
+    /* ---------- DARK MODE ---------- */
     .night-mode body {
       background: #121212;
       color: #e0e0e0;
     }
     .night-mode .container {
       background: #1e1e1e;
-      box-shadow: none;
     }
-    .night-mode h1, .night-mode h2 {
+    .night-mode h1, .night-mode h2, .night-mode label {
       color: #e0e0e0;
     }
-    .night-mode label {
-      color: #e0e0e0;
-    }
-    .night-mode .inventory-card,
-    .night-mode .liked-item,
-    .night-mode .modal-content {
+    .night-mode .inventory-card, .night-mode .modal-content {
       background: #1e1e1e;
-      box-shadow: 6px 6px 12px rgba(0,0,0,0.7);
-    }
-    .night-mode .inventory-card h3,
-    .night-mode input,
-    .night-mode select,
-    .night-mode .modal-content label,
-    .night-mode .modal-content h2 {
-      color: #e0e0e0;
+      box-shadow: none;
     }
     .night-mode button {
       background: #bb86fc;
       color: #121212;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
     }
     .night-mode button:hover {
       background: #985eff;
     }
-    .night-mode .tab {
-      color: #e0e0e0;
-    }
-    .night-mode .tab.active {
-      border-bottom-color: #e0e0e0;
-      color: #e0e0e0;
-    }
-    .night-mode .category-tab {
-      background: #1e1e1e;
-      color: #e0e0e0;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.7);
-    }
     .night-mode .category-tab.active {
       background: #bb86fc;
       color: #121212;
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4);
-    }
-    .night-mode .error-message {
-      color: #ffcc00;
-    }
-    /* Animations for Like Toggle */
-    .liked-animation {
-      animation: likedPulse 0.3s;
-    }
-    @keyframes likedPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
-    }
-    .unliked-animation {
-      animation: unlikedPulse 0.3s;
-    }
-    @keyframes unlikedPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(0.8); }
-      100% { transform: scale(1); }
     }
   </style>
 </head>
@@ -499,7 +315,7 @@
         </div>
       </div>
       <button id="btn-export-inventory" class="export-btn">Export Inventory</button>
-      <div id="category-tabs" class="sub-tabs"></div>
+      <div class="sub-tabs" id="category-tabs"></div>
       <div id="inventory-list"></div>
     </div>
     
@@ -595,20 +411,20 @@
   </div>
   
   <script>
-    /* GLOBAL VARIABLES */
+    // GLOBAL VARIABLES
     let inventory = [];
     let liked = [];
     let nextId = 1;
     let activeCategoryTab = "All";
     let currentRemoveId = null;
     let currentEditId = null;
-    let sharedMode = false; // true if shared view
+    let sharedMode = false; // true for shared (read-only) view
 
-    // Inventory & Liked controls
+    // Controls for Inventory & Liked
     let inventorySearchTerm = "";
-    let inventorySortOption = "name_asc"; // options: name_asc, name_desc, qty_asc, qty_desc
-    let inventoryViewType = "cards"; // "cards" or "list"
-    let likedViewType = "cards"; // "cards" or "list"
+    let inventorySortOption = "name_asc";
+    let inventoryViewType = "cards";
+    let likedViewType = "cards";
 
     /* DOM REFERENCES */
     const tabs = document.querySelectorAll('.tab');
@@ -632,15 +448,16 @@
     const btnExportLiked = document.getElementById('btn-export-liked');
     const btnShareLiked = document.getElementById('btn-share-liked');
 
-    // Inventory Tab Control Panel
+    // Control Panel elements for Inventory
     const inventorySearchInput = document.getElementById('inventory-search');
     const inventorySortSelect = document.getElementById('inventory-sort');
     const inventoryViewCardsBtn = document.getElementById('inventory-view-cards');
     const inventoryViewListBtn = document.getElementById('inventory-view-list');
-    // Liked Tab view toggle
+    // Liked tab view toggle
     const likedViewCardsBtn = document.getElementById('liked-view-cards');
     const likedViewListBtn = document.getElementById('liked-view-list');
 
+    // Modal elements
     const confirmModal = document.getElementById('confirm-modal');
     const confirmMessage = document.getElementById('confirm-message');
     const confirmOk = document.getElementById('confirm-ok');
@@ -651,7 +468,7 @@
     const editSave = document.getElementById('edit-save');
     const editCancel = document.getElementById('edit-cancel');
 
-    /* HEADER BUTTONS - Attached Once */
+    /* HEADER BUTTONS - Set up once */
     document.addEventListener("DOMContentLoaded", () => {
       const btnSaveBackup = document.getElementById('btn-save-backup');
       const btnLoadBackup = document.getElementById('btn-load-backup');
@@ -702,12 +519,8 @@
         const encodedData = btoa(dataStr);
         const shareableLink = window.location.origin + window.location.pathname + "?data=" + encodeURIComponent(encodedData);
         navigator.clipboard.writeText(shareableLink)
-          .then(() => {
-            alert("Shareable link copied to clipboard:\n" + shareableLink);
-          })
-          .catch(err => {
-            prompt("Copy this link:", shareableLink);
-          });
+          .then(() => alert("Shareable link copied to clipboard:\n" + shareableLink))
+          .catch(err => prompt("Copy this link:", shareableLink));
       });
 
       nightModeToggle.addEventListener("click", () => {
@@ -724,6 +537,7 @@
         tab.classList.add("active");
         const contentId = "content-" + tab.id.split("-")[1];
         document.getElementById(contentId).classList.add("active");
+        // When switching tabs, update inventory/in-out/liked displays
         if (tab.id === "tab-inventory" || tab.id === "tab-inout" || tab.id === "tab-liked") {
           renderCategoryTabs();
           updateInventoryDisplay();
@@ -751,8 +565,7 @@
         return;
       }
       const header = ["ID", "Name", "Category", "Quantity", "Image"];
-      const csvRows = [];
-      csvRows.push(header.join(","));
+      const csvRows = [header.join(",")];
       data.forEach(item => {
         const row = [
           item.id,
@@ -773,12 +586,7 @@
       URL.revokeObjectURL(url);
     }
     btnExportInventory.addEventListener("click", () => {
-      let exportData = [];
-      if (activeCategoryTab === "All") {
-        exportData = inventory;
-      } else {
-        exportData = inventory.filter(item => item.category === activeCategoryTab);
-      }
+      let exportData = activeCategoryTab === "All" ? inventory : inventory.filter(item => item.category === activeCategoryTab);
       exportCSV(exportData, "inventory_export.csv");
     });
     btnExportLiked.addEventListener("click", () => {
@@ -823,7 +631,33 @@
       });
     }
 
-    /* INVENTORY DISPLAY */
+    /* RENDER CATEGORY TABS */
+    function renderCategoryTabs() {
+      categoryTabsDiv.innerHTML = "";
+      const categories = new Set(inventory.map(item => item.category));
+      const all = document.createElement("div");
+      all.className = "category-tab" + (activeCategoryTab === "All" ? " active" : "");
+      all.textContent = "All";
+      all.addEventListener("click", () => {
+        activeCategoryTab = "All";
+        renderCategoryTabs();
+        updateInventoryDisplay();
+      });
+      categoryTabsDiv.appendChild(all);
+      categories.forEach(cat => {
+        const tab = document.createElement("div");
+        tab.className = "category-tab" + (activeCategoryTab === cat ? " active" : "");
+        tab.textContent = cat;
+        tab.addEventListener("click", () => {
+          activeCategoryTab = cat;
+          renderCategoryTabs();
+          updateInventoryDisplay();
+        });
+        categoryTabsDiv.appendChild(tab);
+      });
+    }
+
+    /* UPDATE INVENTORY DISPLAY */
     function updateInventoryDisplay() {
       let items = inventory.filter(item =>
         item.name.toLowerCase().includes(inventorySearchTerm) ||
@@ -841,7 +675,6 @@
       if (activeCategoryTab !== "All") {
         items = items.filter(item => item.category === activeCategoryTab);
       }
-
       inventoryListDiv.innerHTML = "";
       if (items.length === 0) {
         inventoryListDiv.innerHTML = '<p class="error-message">No items in this category.</p>';
@@ -879,7 +712,7 @@
           card.insertAdjacentElement("afterbegin", actionsDiv);
           inventoryListDiv.appendChild(card);
         });
-      } else {
+      } else { // List view
         const listContainer = document.createElement("div");
         listContainer.className = "list-view";
         items.forEach(item => {
@@ -957,7 +790,6 @@
           likedDiv.innerHTML = html;
           const removeBtn = document.createElement("button");
           removeBtn.textContent = "Remove";
-          removeBtn.style.marginLeft = "10px";
           removeBtn.addEventListener("click", () => {
             liked = liked.filter(i => i.id !== item.id);
             renderLiked();
@@ -965,7 +797,7 @@
           likedDiv.appendChild(removeBtn);
           likedListDiv.appendChild(likedDiv);
         });
-      } else {
+      } else { // List view for liked
         const listContainer = document.createElement("div");
         listContainer.className = "list-view";
         liked.forEach(item => {
@@ -979,7 +811,6 @@
           actionsDiv.className = "item-actions";
           const removeBtn = document.createElement("button");
           removeBtn.textContent = "Remove";
-          removeBtn.title = "Remove";
           removeBtn.addEventListener("click", () => {
             liked = liked.filter(i => i.id !== item.id);
             renderLiked();
@@ -1105,7 +936,7 @@
       const addItemToLocal = (imgUrl) => {
         const newItem = { id: nextId++, name: nameVal, category: catVal, quantity: qtyVal, image: imgUrl };
         inventory.push(newItem);
-        // Reset the New Item form and clear search so the new item appears
+        // Reset New Item form and clear search/filters so new item shows
         newNameInput.value = "";
         newCategoryInput.value = "";
         newQtyInput.value = "1";
@@ -1220,7 +1051,7 @@
       });
     }
 
-    /* SHARED DATA */
+    /* SHARED DATA (if any) */
     function loadSharedData() {
       const params = new URLSearchParams(window.location.search);
       const likedDataParam = params.get("likeddata");
@@ -1238,9 +1069,6 @@
             document.getElementById("content-inventory").style.display = "none";
             document.getElementById("content-inout").style.display = "none";
             document.getElementById("content-new").style.display = "none";
-            btnSaveBackup.style.display = "none";
-            btnLoadBackup.style.display = "none";
-            btnShare.style.display = "none";
             document.getElementById("tab-liked").click();
             return true;
           }
@@ -1260,9 +1088,6 @@
             document.getElementById("tab-new").style.display = "none";
             document.getElementById("content-inout").style.display = "none";
             document.getElementById("content-new").style.display = "none";
-            btnSaveBackup.style.display = "none";
-            btnLoadBackup.style.display = "none";
-            btnShare.style.display = "none";
             document.getElementById("tab-inventory").click();
             return true;
           }
