@@ -415,7 +415,7 @@
       <button id="btn-remove">Remove</button>
     </div>
     
-    <!-- New Item Tab -->
+    <!-- New Item Tab with Custom Dropdowns -->
     <div id="content-new" class="tab-content">
       <h2>New Item</h2>
       <div class="form-group custom-dropdown">
@@ -486,8 +486,8 @@
     let activeCategoryTab = "All";
     let currentRemoveId = null;
     let currentEditId = null;
-    let sharedMode = false; // Flag for shared inventory view
-
+    let sharedMode = false; // Will be set true in shared inventory view
+    
     // Header Controls
     const btnSaveBackup = document.getElementById('btn-save-backup');
     const btnLoadBackup = document.getElementById('btn-load-backup');
@@ -524,7 +524,6 @@
             updateInventoryDisplay();
             updateInOutCategories();
             updateInOutItems();
-            updateNewItemDatalists();
           } else {
             alert('Invalid backup file format.');
           }
@@ -610,7 +609,6 @@
     newCategoryInput.addEventListener('input', updateCategorySuggestions);
     
     // Load Shared Data
-    let sharedMode = false;
     function loadSharedData() {
       const params = new URLSearchParams(window.location.search);
       const likedDataParam = params.get('likeddata');
@@ -621,7 +619,7 @@
           const sharedLiked = JSON.parse(decoded);
           if (Array.isArray(sharedLiked)) {
             liked = sharedLiked;
-            // Hide all tabs except Liked view and header controls (except dark mode)
+            // Hide all tabs except Liked view and hide header controls (except dark mode)
             document.getElementById('tab-inventory').style.display = 'none';
             document.getElementById('tab-inout').style.display = 'none';
             document.getElementById('tab-new').style.display = 'none';
@@ -678,7 +676,6 @@
           updateInventoryDisplay();
           updateInOutCategories();
           updateInOutItems();
-          updateNewItemDatalists();
           if (tab.id === 'tab-liked') {
             renderLiked();
           }
@@ -718,7 +715,7 @@
       return liked.some(i => i.id === itemId);
     }
     
-    // Toggle Like Status with Animation
+    // Toggle like status with animation
     function toggleLike(itemId, btn) {
       if (isItemLiked(itemId)) {
         liked = liked.filter(i => i.id !== itemId);
@@ -739,141 +736,6 @@
       }
       renderLiked();
     }
-    
-    // Update datalists for New Item suggestions
-    function updateNewItemDatalists() {
-      // Not used for custom dropdowns
-    }
-    
-    // Upload image to imgbb
-    function uploadImageToImgbb(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const base64 = e.target.result.split(',')[1];
-          try {
-            const formData = new URLSearchParams();
-            formData.append('key', '3f1b77bcc1d4b241c00c5c3f27216041');
-            formData.append('image', base64);
-            const response = await fetch('https://api.imgbb.com/1/upload', {
-              method: 'POST',
-              body: formData
-            });
-            const result = await response.json();
-            if (result.success) {
-              resolve(result.data.display_url);
-            } else {
-              reject(result.error);
-            }
-          } catch (err) {
-            reject(err);
-          }
-        };
-        reader.onerror = err => reject(err);
-        reader.readAsDataURL(file);
-      });
-    }
-    
-    // New Item: Add item with image upload
-    btnNewAdd.addEventListener('click', () => {
-      const name = newNameInput.value.trim();
-      const category = newCategoryInput.value.trim();
-      const qty = parseInt(document.getElementById('new-qty').value);
-      if (name === '' || category === '' || isNaN(qty) || qty < 1) {
-        alert('Please fill in all fields correctly.');
-        return;
-      }
-      if (inventory.some(item => item.name.toLowerCase() === name.toLowerCase())) {
-        alert('An item with that name already exists.');
-        return;
-      }
-      const addItemToLocal = (imageUrl) => {
-        const newItem = { id: nextId++, name, category, quantity: qty, image: imageUrl };
-        inventory.push(newItem);
-        newNameInput.value = '';
-        newCategoryInput.value = '';
-        document.getElementById('new-qty').value = '1';
-        document.getElementById('new-image').value = '';
-        renderCategoryTabs();
-        updateInventoryDisplay();
-        updateInOutCategories();
-        updateInOutItems();
-      };
-      const file = document.getElementById('new-image').files[0];
-      if (file) {
-        uploadImageToImgbb(file)
-          .then(url => { addItemToLocal(url); })
-          .catch(err => { alert('Image upload failed.'); console.error(err); });
-      } else {
-        addItemToLocal('');
-      }
-    });
-    
-    // In/Out Items: Update Category dropdown
-    function updateInOutCategories() {
-      inoutCategorySelect.innerHTML = '';
-      const categories = new Set(inventory.map(item => item.category));
-      if (categories.size === 0) {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'No categories available';
-        inoutCategorySelect.appendChild(opt);
-        return;
-      }
-      categories.forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        inoutCategorySelect.appendChild(opt);
-      });
-      inoutCategorySelect.selectedIndex = 0;
-    }
-    
-    // In/Out Items: Update Items dropdown based on category
-    function updateInOutItems() {
-      inoutItemSelect.innerHTML = '';
-      const selectedCategory = inoutCategorySelect.value;
-      const items = inventory.filter(item => item.category === selectedCategory);
-      if (items.length === 0) {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'No items available';
-        inoutItemSelect.appendChild(opt);
-        return;
-      }
-      items.forEach(item => {
-        const opt = document.createElement('option');
-        opt.value = item.id;
-        opt.textContent = item.name;
-        inoutItemSelect.appendChild(opt);
-      });
-    }
-    
-    inoutCategorySelect.addEventListener('change', updateInOutItems);
-    
-    // In/Out Items: Increase quantity
-    btnAdd.addEventListener('click', () => {
-      const itemId = parseInt(inoutItemSelect.value);
-      const qty = parseInt(inoutQty.value);
-      if (isNaN(itemId) || isNaN(qty) || qty < 1) return;
-      const item = inventory.find(i => i.id === itemId);
-      if (item) {
-        item.quantity += qty;
-        updateInventoryDisplay();
-      }
-    });
-    
-    // In/Out Items: Decrease quantity
-    btnRemove.addEventListener('click', () => {
-      const itemId = parseInt(inoutItemSelect.value);
-      const qty = parseInt(inoutQty.value);
-      if (isNaN(itemId) || isNaN(qty) || qty < 1) return;
-      const item = inventory.find(i => i.id === itemId);
-      if (item) {
-        item.quantity = Math.max(0, item.quantity - qty);
-        updateInventoryDisplay();
-      }
-    });
     
     // Inventory: Render Category Sub-Tabs
     function renderCategoryTabs() {
@@ -914,7 +776,7 @@
         }
         html += `<h3>${item.name}</h3><p>Category: ${item.category}</p><p>Quantity: ${item.quantity}</p>`;
         card.innerHTML = html;
-        // Card Actions: In shared mode, only show the like button.
+        // Card Actions: if in shared mode, show only Like button; otherwise, show Edit, Remove, and Like.
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'card-actions';
         if (!sharedMode) {
@@ -929,7 +791,6 @@
           actionsDiv.appendChild(editBtn);
           actionsDiv.appendChild(removeBtn);
         }
-        // Always add the like toggle button
         const likedBtn = document.createElement('button');
         likedBtn.textContent = isItemLiked(item.id) ? '❤️' : '🤍';
         likedBtn.title = 'Toggle Like';
@@ -982,7 +843,6 @@
         updateInventoryDisplay();
         updateInOutCategories();
         updateInOutItems();
-        updateNewItemDatalists();
         currentRemoveId = null;
       }
       confirmModal.classList.remove('active');
@@ -1026,7 +886,6 @@
       updateInventoryDisplay();
       updateInOutCategories();
       updateInOutItems();
-      updateNewItemDatalists();
     });
     
     editCancel.addEventListener('click', () => {
@@ -1044,10 +903,10 @@
     
     window.addEventListener('load', () => {
       const params = new URLSearchParams(window.location.search);
-      if (!params.get('data') && !params.get('likeddata')) {
+      // Load shared data first. If no shared data, initialize normally.
+      if (!loadSharedData()) {
         initializeApp();
       }
-      loadSharedData();
     });
   </script>
 </body>
