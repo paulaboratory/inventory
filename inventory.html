@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inventory App with Neumorphic Style & Export</title>
   <style>
-    /* ---------- NEUMORPHIC / LIGHT THEME (DEFAULT) ---------- */
+    /* ---------- LIGHT THEME (DEFAULT) ---------- */
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
@@ -22,8 +22,7 @@
       box-shadow: 10px 10px 20px rgba(0,0,0,0.1),
                   -5px -5px 15px rgba(255,255,255,0.7);
     }
-
-    /* Header with horizontally aligned icons */
+    /* Header */
     .header {
       display: flex;
       align-items: center;
@@ -55,8 +54,7 @@
       box-shadow: 2px 2px 5px rgba(0,0,0,0.15),
                   -2px -2px 5px rgba(255,255,255,0.7);
     }
-
-    /* Tabs with slight neumorphic style */
+    /* Tabs */
     .tabs {
       display: flex;
       border-bottom: 2px solid #b2ebf2;
@@ -89,7 +87,6 @@
     .tab-content.active {
       display: block;
     }
-
     /* Category Sub-Tabs */
     .sub-tabs {
       display: flex;
@@ -113,7 +110,6 @@
       box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2),
                   inset -2px -2px 5px rgba(255,255,255,0.5);
     }
-
     /* Inventory Cards */
     #inventory-list {
       display: grid;
@@ -171,8 +167,7 @@
       color: #0a3574;
       transform: translateY(-2px);
     }
-
-    /* Control Panel for Inventory & Liked Tabs */
+    /* Control Panel (Inventory & Liked) */
     .control-panel {
       display: flex;
       flex-wrap: wrap;
@@ -202,8 +197,7 @@
     .control-panel .view-toggle button:hover {
       background: #80deea;
     }
-
-    /* Improved UI for In/Out Items Tab */
+    /* In/Out Items Tab */
     #content-inout .form-group {
       margin-bottom: 16px;
     }
@@ -235,8 +229,7 @@
     #content-inout button:first-of-type {
       margin-right: 4%;
     }
-
-    /* Improved UI for New Item Tab */
+    /* New Item Tab */
     #content-new .form-group {
       margin-bottom: 16px;
     }
@@ -266,7 +259,6 @@
     #content-new button:hover {
       background: #80deea;
     }
-
     /* Liked Items */
     #liked-list {
       margin-top: 10px;
@@ -307,7 +299,7 @@
       background: #80deea;
     }
 
-    /* Modals - Neumorphic */
+    /* MODALS */
     .modal {
       position: fixed;
       top: 0;
@@ -370,7 +362,7 @@
       background: #80deea;
     }
 
-    /* Custom Dropdown for New Item Tab */
+    /* CUSTOM DROPDOWN */
     .custom-dropdown {
       position: relative;
     }
@@ -395,62 +387,58 @@
       background: #b2ebf2;
     }
 
-    /* ---------- DARK MODE OVERRIDES ---------- */
+    /* ---------- DARK MODE ---------- */
     .night-mode body {
-      background: #0d1b2a;
-      color: #e0f7fa;
+      background: #121212;
+      color: #e0e0e0;
     }
     .night-mode .container {
-      background: #0d1b2a;
+      background: #1e1e1e;
       box-shadow: none;
     }
     .night-mode h1, .night-mode h2 {
-      color: #e0f7fa;
+      color: #e0e0e0;
     }
     .night-mode label {
-      color: #e0f7fa;
+      color: #e0e0e0;
     }
     .night-mode .inventory-card,
     .night-mode .liked-item,
     .night-mode .modal-content {
-      background: #0d1b2a;
-      box-shadow: 6px 6px 12px rgba(0,0,0,0.5),
-                  -6px -6px 12px rgba(255,255,255,0.07);
+      background: #1e1e1e;
+      box-shadow: 6px 6px 12px rgba(0,0,0,0.7);
     }
     .night-mode .inventory-card h3,
     .night-mode input,
     .night-mode select,
     .night-mode .modal-content label,
     .night-mode .modal-content h2 {
-      color: #e0f7fa;
+      color: #e0e0e0;
     }
     .night-mode button {
-      background: #1e3a5f;
-      color: #e0f7fa;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.4),
-                  -2px -2px 5px rgba(255,255,255,0.05);
+      background: #bb86fc;
+      color: #121212;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
     }
     .night-mode button:hover {
-      background: #152c48;
+      background: #985eff;
     }
     .night-mode .tab {
-      color: #e0f7fa;
+      color: #e0e0e0;
     }
     .night-mode .tab.active {
-      border-bottom-color: #e0f7fa;
-      color: #e0f7fa;
+      border-bottom-color: #e0e0e0;
+      color: #e0e0e0;
     }
     .night-mode .category-tab {
-      background: #0d1b2a;
-      color: #e0f7fa;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.5),
-                  -2px -2px 5px rgba(255,255,255,0.07);
+      background: #1e1e1e;
+      color: #e0e0e0;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.7);
     }
     .night-mode .category-tab.active {
-      background: #1e3a5f;
-      color: #e0f7fa;
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4),
-                  inset -2px -2px 5px rgba(255,255,255,0.05);
+      background: #bb86fc;
+      color: #121212;
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4);
     }
     .night-mode .error-message {
       color: #ffcc00;
@@ -500,7 +488,7 @@
     <!-- Inventory Tab -->
     <div id="content-inventory" class="tab-content active">
       <h2>Inventory</h2>
-      <!-- Control Panel -->
+      <!-- Control Panel: Search, Sort, View Toggle -->
       <div class="control-panel">
         <input type="text" id="inventory-search" placeholder="Search items...">
         <select id="inventory-sort">
@@ -622,7 +610,7 @@
 
     // For Inventory Tab Controls
     let inventorySearchTerm = "";
-    let inventorySortOption = "name_asc"; // name_asc, name_desc, qty_asc, qty_desc
+    let inventorySortOption = "name_asc"; // options: name_asc, name_desc, qty_asc, qty_desc
     let inventoryViewType = "cards"; // "cards" or "list"
     // For Liked Tab Controls
     let likedViewType = "cards"; // "cards" or "list"
@@ -649,7 +637,7 @@
     const btnExportLiked = document.getElementById('btn-export-liked');
     const btnShareLiked = document.getElementById('btn-share-liked');
 
-    // Inventory Tab Control Panel Elements
+    // Inventory Tab Control Panel
     const inventorySearchInput = document.getElementById('inventory-search');
     const inventorySortSelect = document.getElementById('inventory-sort');
     const inventoryViewCardsBtn = document.getElementById('inventory-view-cards');
@@ -658,7 +646,6 @@
     const likedViewCardsBtn = document.getElementById('liked-view-cards');
     const likedViewListBtn = document.getElementById('liked-view-list');
 
-    // Modals
     const confirmModal = document.getElementById('confirm-modal');
     const confirmMessage = document.getElementById('confirm-message');
     const confirmOk = document.getElementById('confirm-ok');
@@ -669,7 +656,7 @@
     const editSave = document.getElementById('edit-save');
     const editCancel = document.getElementById('edit-cancel');
 
-    // HEADER BUTTONS (set up once)
+    /* HEADER BUTTONS - Attached Once in DOMContentLoaded */
     document.addEventListener("DOMContentLoaded", () => {
       const btnSaveBackup = document.getElementById('btn-save-backup');
       const btnLoadBackup = document.getElementById('btn-load-backup');
@@ -812,7 +799,7 @@
       inventorySortOption = e.target.value;
       updateInventoryDisplay();
     });
-    if (inventoryViewCardsBtn && inventoryViewListBtn) {
+    if(inventoryViewCardsBtn && inventoryViewListBtn) {
       inventoryViewCardsBtn.addEventListener("click", () => {
         inventoryViewType = "cards";
         inventoryViewCardsBtn.classList.add("active");
@@ -826,7 +813,7 @@
         updateInventoryDisplay();
       });
     }
-    if (likedViewCardsBtn && likedViewListBtn) {
+    if(likedViewCardsBtn && likedViewListBtn) {
       likedViewCardsBtn.addEventListener("click", () => {
         likedViewType = "cards";
         likedViewCardsBtn.classList.add("active");
@@ -843,7 +830,7 @@
 
     /* INVENTORY DISPLAY */
     function updateInventoryDisplay() {
-      // Apply search filter and sorting
+      // Apply search filter and sort
       let items = inventory.filter(item =>
         item.name.toLowerCase().includes(inventorySearchTerm) ||
         item.category.toLowerCase().includes(inventorySearchTerm)
@@ -857,7 +844,7 @@
       } else if (inventorySortOption === "qty_desc") {
         items.sort((a, b) => b.quantity - a.quantity);
       }
-      // Filter by selected category
+      // Filter by category
       if (activeCategoryTab !== "All") {
         items = items.filter(item => item.category === activeCategoryTab);
       }
@@ -899,7 +886,7 @@
           card.insertAdjacentElement("afterbegin", actionsDiv);
           inventoryListDiv.appendChild(card);
         });
-      } else { // List view
+      } else {
         const listContainer = document.createElement("div");
         listContainer.className = "list-view";
         items.forEach(item => {
@@ -934,6 +921,29 @@
         inventoryListDiv.appendChild(listContainer);
       }
     }
+    function isItemLiked(itemId) {
+      return liked.some(i => i.id === itemId);
+    }
+    function toggleLike(itemId, btn) {
+      if (isItemLiked(itemId)) {
+        liked = liked.filter(i => i.id !== itemId);
+        btn.classList.add("unliked-animation");
+        setTimeout(() => {
+          btn.classList.remove("unliked-animation");
+          btn.textContent = "🤍";
+        }, 300);
+      } else {
+        const item = inventory.find(i => i.id === itemId);
+        if (!item) return;
+        liked.push({ id: item.id, name: item.name, category: item.category, image: item.image, quantity: 1 });
+        btn.textContent = "❤️";
+        btn.classList.add("liked-animation");
+        setTimeout(() => {
+          btn.classList.remove("liked-animation");
+        }, 300);
+      }
+      renderLiked();
+    }
 
     /* LIKED ITEMS DISPLAY */
     function renderLiked() {
@@ -962,7 +972,7 @@
           likedDiv.appendChild(removeBtn);
           likedListDiv.appendChild(likedDiv);
         });
-      } else { // List view for liked
+      } else {
         const listContainer = document.createElement("div");
         listContainer.className = "list-view";
         liked.forEach(item => {
@@ -1102,10 +1112,13 @@
       const addItemToLocal = (imgUrl) => {
         const newItem = { id: nextId++, name: nameVal, category: catVal, quantity: qtyVal, image: imgUrl };
         inventory.push(newItem);
+        // Reset new item form and search field
         newNameInput.value = "";
         newCategoryInput.value = "";
         newQtyInput.value = "1";
         newImageInput.value = "";
+        inventorySearchInput.value = "";
+        inventorySearchTerm = "";
         renderCategoryTabs();
         updateInventoryDisplay();
         updateInOutCategories();
@@ -1182,7 +1195,7 @@
       editModal.classList.remove("active");
     });
 
-    /* IMAGE UPLOAD */
+    /* IMAGE UPLOAD FUNCTION */
     function uploadImageToImgbb(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1211,7 +1224,60 @@
       });
     }
 
-    /* DOMContentLoaded: Initialize then load shared data */
+    /* SHARED DATA */
+    function loadSharedData() {
+      const params = new URLSearchParams(window.location.search);
+      const likedDataParam = params.get("likeddata");
+      const dataParam = params.get("data");
+      
+      if (likedDataParam) {
+        try {
+          const decoded = atob(likedDataParam);
+          const sharedLiked = JSON.parse(decoded);
+          if (Array.isArray(sharedLiked)) {
+            liked = sharedLiked;
+            document.getElementById("tab-inventory").style.display = "none";
+            document.getElementById("tab-inout").style.display = "none";
+            document.getElementById("tab-new").style.display = "none";
+            document.getElementById("content-inventory").style.display = "none";
+            document.getElementById("content-inout").style.display = "none";
+            document.getElementById("content-new").style.display = "none";
+            btnSaveBackup.style.display = "none";
+            btnLoadBackup.style.display = "none";
+            btnShare.style.display = "none";
+            document.getElementById("tab-liked").click();
+            return true;
+          }
+        } catch (err) {
+          console.error("Error decoding shared liked data:", err);
+        }
+      }
+      if (dataParam) {
+        try {
+          const decoded = atob(dataParam);
+          const sharedInventory = JSON.parse(decoded);
+          if (Array.isArray(sharedInventory)) {
+            inventory = sharedInventory;
+            nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
+            sharedMode = true;
+            document.getElementById("tab-inout").style.display = "none";
+            document.getElementById("tab-new").style.display = "none";
+            document.getElementById("content-inout").style.display = "none";
+            document.getElementById("content-new").style.display = "none";
+            btnSaveBackup.style.display = "none";
+            btnLoadBackup.style.display = "none";
+            btnShare.style.display = "none";
+            document.getElementById("tab-inventory").click();
+            return true;
+          }
+        } catch (err) {
+          console.error("Error decoding shared inventory:", err);
+        }
+      }
+      return false;
+    }
+
+    /* DOMContentLoaded */
     document.addEventListener("DOMContentLoaded", () => {
       initializeApp();
       loadSharedData();
