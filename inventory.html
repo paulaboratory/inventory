@@ -384,7 +384,6 @@
     .suggestion:hover {
       background: #b2ebf2;
     }
-
     /* DARK MODE */
     .night-mode body {
       background: #121212;
@@ -441,7 +440,6 @@
     .night-mode .error-message {
       color: #ffcc00;
     }
-
     /* Animations for Like Toggle */
     .liked-animation {
       animation: likedPulse 0.3s;
@@ -604,13 +602,12 @@
     let activeCategoryTab = "All";
     let currentRemoveId = null;
     let currentEditId = null;
-    let sharedMode = false; // true if shared (read-only) view
+    let sharedMode = false; // true if shared view
 
-    // For Inventory Tab Controls
+    // Inventory & Liked controls
     let inventorySearchTerm = "";
-    let inventorySortOption = "name_asc"; // name_asc, name_desc, qty_asc, qty_desc
+    let inventorySortOption = "name_asc"; // options: name_asc, name_desc, qty_asc, qty_desc
     let inventoryViewType = "cards"; // "cards" or "list"
-    // For Liked Tab Controls
     let likedViewType = "cards"; // "cards" or "list"
 
     /* DOM REFERENCES */
@@ -1120,6 +1117,8 @@
         updateInventoryDisplay();
         updateInOutCategories();
         updateInOutItems();
+        // Force switch to Inventory tab
+        document.getElementById("tab-inventory").click();
       };
       if (file) {
         uploadImageToImgbb(file)
