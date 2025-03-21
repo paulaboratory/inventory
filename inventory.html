@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inventory App with Neumorphic Style & Export</title>
+  <title>Inventory App with Neumorphic Style, Export, & Filters</title>
   <style>
     /* ---------- NEUMORPHIC / LIGHT THEME (DEFAULT) ---------- */
     body {
@@ -54,6 +54,37 @@
       transform: scale(1.1);
       box-shadow: 2px 2px 5px rgba(0,0,0,0.15),
                   -2px -2px 5px rgba(255,255,255,0.7);
+    }
+
+    /* Control Panel in Inventory & Liked Tabs */
+    .control-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .control-panel input[type="text"],
+    .control-panel select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      flex: 1;
+      min-width: 150px;
+    }
+    .control-panel .view-toggle button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 10px;
+      background: #b2ebf2;
+      color: #0d47a1;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .control-panel .view-toggle button.active {
+      background: #80deea;
+    }
+    .control-panel .view-toggle button:hover {
+      background: #80deea;
     }
 
     /* Tabs with slight neumorphic style */
@@ -172,86 +203,23 @@
       transform: translateY(-2px);
     }
 
-    /* Improved UI for In/Out Items Tab */
-    #content-inout .form-group {
-      margin-bottom: 16px;
-    }
-    #content-inout label {
-      font-size: 1.1em;
-      margin-bottom: 6px;
-    }
-    #content-inout select,
-    #content-inout input[type="number"] {
-      width: 100%;
+    /* List view for Inventory and Liked */
+    .list-view .item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
+      border-bottom: 1px solid #ccc;
     }
-    #content-inout button {
-      width: 48%;
-      padding: 10px;
-      border: none;
-      border-radius: 10px;
-      background: #b2ebf2;
-      color: #0d47a1;
-      cursor: pointer;
-      transition: background 0.3s;
+    .list-view .item-row:last-child {
+      border-bottom: none;
     }
-    #content-inout button:hover {
-      background: #80deea;
+    .list-view .item-info {
+      flex: 1;
     }
-    #content-inout button:first-of-type {
-      margin-right: 4%;
-    }
-
-    /* Improved UI for New Item Tab */
-    #content-new .form-group {
-      margin-bottom: 16px;
-    }
-    #content-new label {
-      font-size: 1.1em;
-      margin-bottom: 6px;
-    }
-    #content-new input[type="text"],
-    #content-new input[type="number"],
-    #content-new input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
-    }
-    #content-new button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      background: #b2ebf2;
-      color: #0d47a1;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    #content-new button:hover {
-      background: #80deea;
-    }
-
-    /* Export Buttons */
-    .export-btn {
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      font-size: 1em;
-      cursor: pointer;
-      background: #b2ebf2;
-      color: #0d47a1;
-      border: none;
-      border-radius: 10px;
-      box-shadow: 2px 2px 5px rgba(0,0,0,0.1),
-                  -2px -2px 5px rgba(255,255,255,0.7);
-      transition: background 0.3s;
-    }
-    .export-btn:hover {
-      background: #80deea;
+    .list-view .item-actions button {
+      margin-left: 10px;
+      font-size: 1.2em;
     }
 
     /* Liked Items */
@@ -487,6 +455,20 @@
     <!-- Inventory Tab -->
     <div id="content-inventory" class="tab-content active">
       <h2>Inventory</h2>
+      <!-- Control Panel: Search, Sort, and View Toggle -->
+      <div class="control-panel">
+        <input type="text" id="inventory-search" placeholder="Search items...">
+        <select id="inventory-sort">
+          <option value="name_asc">Sort by Name (A-Z)</option>
+          <option value="name_desc">Sort by Name (Z-A)</option>
+          <option value="qty_asc">Sort by Quantity (Ascending)</option>
+          <option value="qty_desc">Sort by Quantity (Descending)</option>
+        </select>
+        <div class="view-toggle">
+          <button id="inventory-view-cards" class="active">Cards</button>
+          <button id="inventory-view-list">List</button>
+        </div>
+      </div>
       <button id="btn-export-inventory" class="export-btn">Export Inventory</button>
       <div id="category-tabs" class="sub-tabs"></div>
       <div id="inventory-list"></div>
@@ -540,6 +522,13 @@
     <!-- Liked Tab -->
     <div id="content-liked" class="tab-content">
       <h2>Liked</h2>
+      <!-- Control Panel for Liked -->
+      <div class="control-panel">
+        <div class="view-toggle">
+          <button id="liked-view-cards" class="active">Cards</button>
+          <button id="liked-view-list">List</button>
+        </div>
+      </div>
       <button id="btn-export-liked" class="export-btn">Export Liked</button>
       <button id="btn-share-liked">Share Liked</button>
       <div id="liked-list"></div>
@@ -585,7 +574,14 @@
     let activeCategoryTab = "All";
     let currentRemoveId = null;
     let currentEditId = null;
-    let sharedMode = false; // true if shared view
+    let sharedMode = false; // true if shared (read-only) view
+
+    // For Inventory Tab Controls
+    let inventorySearchTerm = "";
+    let inventorySortOption = "name_asc"; // options: name_asc, name_desc, qty_asc, qty_desc
+    let inventoryViewType = "cards"; // "cards" or "list"
+    // For Liked Tab Controls
+    let likedViewType = "cards"; // "cards" or "list"
 
     /* DOM REFERENCES */
     const tabs = document.querySelectorAll('.tab');
@@ -607,6 +603,17 @@
     const likedListDiv = document.getElementById('liked-list');
     const btnExportInventory = document.getElementById('btn-export-inventory');
     const btnExportLiked = document.getElementById('btn-export-liked');
+    const btnShareLiked = document.getElementById('btn-share-liked');
+
+    // Control panel elements for Inventory Tab
+    const inventorySearchInput = document.getElementById('inventory-search');
+    const inventorySortSelect = document.getElementById('inventory-sort');
+    const inventoryViewCardsBtn = document.getElementById('inventory-view-cards');
+    const inventoryViewListBtn = document.getElementById('inventory-view-list');
+    // For Liked Tab, view toggle buttons
+    const likedViewCardsBtn = document.getElementById('liked-view-cards');
+    const likedViewListBtn = document.getElementById('liked-view-list');
+
     const confirmModal = document.getElementById('confirm-modal');
     const confirmMessage = document.getElementById('confirm-message');
     const confirmOk = document.getElementById('confirm-ok');
@@ -623,7 +630,6 @@
     const btnShare = document.getElementById('btn-share');
     const backupFileInput = document.getElementById('backup-file');
     const nightModeToggle = document.getElementById('nightModeToggle');
-    const btnShareLiked = document.getElementById('btn-share-liked');
 
     /* TAB SWITCHING */
     tabs.forEach(tab => {
@@ -694,181 +700,206 @@
       exportCSV(liked, "liked_export.csv");
     });
 
-    /* SHARED DATA */
-    function loadSharedData() {
-      const params = new URLSearchParams(window.location.search);
-      const likedDataParam = params.get('likeddata');
-      const dataParam = params.get('data');
-      
-      if (likedDataParam) {
-        try {
-          const decoded = atob(likedDataParam);
-          const sharedLiked = JSON.parse(decoded);
-          if (Array.isArray(sharedLiked)) {
-            liked = sharedLiked;
-            document.getElementById('tab-inventory').style.display = 'none';
-            document.getElementById('tab-inout').style.display = 'none';
-            document.getElementById('tab-new').style.display = 'none';
-            document.getElementById('content-inventory').style.display = 'none';
-            document.getElementById('content-inout').style.display = 'none';
-            document.getElementById('content-new').style.display = 'none';
-            btnSaveBackup.style.display = 'none';
-            btnLoadBackup.style.display = 'none';
-            btnShare.style.display = 'none';
-            document.getElementById('tab-liked').click();
-            return true;
-          }
-        } catch (err) {
-          console.error('Error decoding shared liked data:', err);
-        }
-      }
-      if (dataParam) {
-        try {
-          const decoded = atob(dataParam);
-          const sharedInventory = JSON.parse(decoded);
-          if (Array.isArray(sharedInventory)) {
-            inventory = sharedInventory;
-            nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
-            sharedMode = true;
-            document.getElementById('tab-inout').style.display = 'none';
-            document.getElementById('tab-new').style.display = 'none';
-            document.getElementById('content-inout').style.display = 'none';
-            document.getElementById('content-new').style.display = 'none';
-            btnSaveBackup.style.display = 'none';
-            btnLoadBackup.style.display = 'none';
-            btnShare.style.display = 'none';
-            document.getElementById('tab-inventory').click();
-            return true;
-          }
-        } catch (err) {
-          console.error('Error decoding shared inventory:', err);
-        }
-      }
-      return false;
+    /* INVENTORY TAB CONTROL PANEL */
+    // Search
+    inventorySearchInput.addEventListener('input', (e) => {
+      inventorySearchTerm = e.target.value.toLowerCase().trim();
+      updateInventoryDisplay();
+    });
+    // Sort
+    inventorySortSelect.addEventListener('change', (e) => {
+      inventorySortOption = e.target.value;
+      updateInventoryDisplay();
+    });
+    // View Toggle
+    if(inventoryViewCardsBtn && inventoryViewListBtn) {
+      inventoryViewCardsBtn.addEventListener('click', () => {
+        inventoryViewType = "cards";
+        inventoryViewCardsBtn.classList.add('active');
+        inventoryViewListBtn.classList.remove('active');
+        updateInventoryDisplay();
+      });
+      inventoryViewListBtn.addEventListener('click', () => {
+        inventoryViewType = "list";
+        inventoryViewListBtn.classList.add('active');
+        inventoryViewCardsBtn.classList.remove('active');
+        updateInventoryDisplay();
+      });
     }
-
-    /* CATEGORY TABS */
-    function renderCategoryTabs() {
-      categoryTabsDiv.innerHTML = '';
-      const categories = new Set(inventory.map(item => item.category));
-      const tabsArr = ["All", ...categories];
-      tabsArr.forEach(cat => {
-        const tab = document.createElement('div');
-        tab.className = 'category-tab';
-        if (cat === activeCategoryTab) tab.classList.add('active');
-        tab.textContent = cat;
-        tab.addEventListener('click', () => {
-          activeCategoryTab = cat;
-          renderCategoryTabs();
-          updateInventoryDisplay();
-        });
-        categoryTabsDiv.appendChild(tab);
+    // For Liked Tab view toggle
+    if(likedViewCardsBtn && likedViewListBtn) {
+      likedViewCardsBtn.addEventListener('click', () => {
+        likedViewType = "cards";
+        likedViewCardsBtn.classList.add('active');
+        likedViewListBtn.classList.remove('active');
+        renderLiked();
+      });
+      likedViewListBtn.addEventListener('click', () => {
+        likedViewType = "list";
+        likedViewListBtn.classList.add('active');
+        likedViewCardsBtn.classList.remove('active');
+        renderLiked();
       });
     }
 
     /* INVENTORY DISPLAY */
     function updateInventoryDisplay() {
-      inventoryListDiv.innerHTML = '';
-      let itemsToDisplay = inventory;
-      if (activeCategoryTab !== "All") {
-        itemsToDisplay = inventory.filter(item => item.category === activeCategoryTab);
+      // Filter by search term and sort
+      let items = inventory.filter(item =>
+        item.name.toLowerCase().includes(inventorySearchTerm) ||
+        item.category.toLowerCase().includes(inventorySearchTerm)
+      );
+      if (inventorySortOption === "name_asc") {
+        items.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (inventorySortOption === "name_desc") {
+        items.sort((a, b) => b.name.localeCompare(a.name));
+      } else if (inventorySortOption === "qty_asc") {
+        items.sort((a, b) => a.quantity - b.quantity);
+      } else if (inventorySortOption === "qty_desc") {
+        items.sort((a, b) => b.quantity - a.quantity);
       }
-      if (itemsToDisplay.length === 0) {
+
+      // If a category is selected (not "All"), filter by category too
+      if (activeCategoryTab !== "All") {
+        items = items.filter(item => item.category === activeCategoryTab);
+      }
+
+      inventoryListDiv.innerHTML = "";
+      if (items.length === 0) {
         inventoryListDiv.innerHTML = '<p class="error-message">No items in this category.</p>';
         return;
       }
-      itemsToDisplay.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'inventory-card';
-        let html = '';
-        if (item.image) {
-          html += `<img src="${item.image}" alt="${item.name}">`;
-        }
-        html += `<h3>${item.name}</h3><p>Category: ${item.category}</p><p>Quantity: ${item.quantity}</p>`;
-        card.innerHTML = html;
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'card-actions';
-        if (!sharedMode) {
-          const editBtn = document.createElement('button');
-          editBtn.textContent = '✏️';
-          editBtn.title = 'Edit Item';
-          editBtn.addEventListener('click', () => openEditModal(item.id));
-          const removeBtn = document.createElement('button');
-          removeBtn.textContent = '🗑️';
-          removeBtn.title = 'Remove Item';
-          removeBtn.addEventListener('click', () => openConfirmModal(item.id, item.name));
-          actionsDiv.appendChild(editBtn);
-          actionsDiv.appendChild(removeBtn);
-        }
-        const likedBtn = document.createElement('button');
-        likedBtn.textContent = isItemLiked(item.id) ? '❤️' : '🤍';
-        likedBtn.title = 'Toggle Like';
-        likedBtn.addEventListener('click', () => toggleLike(item.id, likedBtn));
-        actionsDiv.appendChild(likedBtn);
-        card.insertAdjacentElement('afterbegin', actionsDiv);
-        inventoryListDiv.appendChild(card);
-      });
-    }
-    function isItemLiked(itemId) {
-      return liked.some(i => i.id === itemId);
-    }
-    function toggleLike(itemId, btn) {
-      if (isItemLiked(itemId)) {
-        liked = liked.filter(i => i.id !== itemId);
-        btn.classList.add('unliked-animation');
-        setTimeout(() => {
-          btn.classList.remove('unliked-animation');
-          btn.textContent = '🤍';
-        }, 300);
-      } else {
-        const item = inventory.find(i => i.id === itemId);
-        if (!item) return;
-        liked.push({ id: item.id, name: item.name, category: item.category, image: item.image, quantity: 1 });
-        btn.textContent = '❤️';
-        btn.classList.add('liked-animation');
-        setTimeout(() => {
-          btn.classList.remove('liked-animation');
-        }, 300);
+      // Render based on view type: cards or list
+      if (inventoryViewType === "cards") {
+        items.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'inventory-card';
+          let html = "";
+          if (item.image) {
+            html += `<img src="${item.image}" alt="${item.name}">`;
+          }
+          html += `<h3>${item.name}</h3><p>Category: ${item.category}</p><p>Quantity: ${item.quantity}</p>`;
+          card.innerHTML = html;
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'card-actions';
+          if (!sharedMode) {
+            const editBtn = document.createElement('button');
+            editBtn.textContent = '✏️';
+            editBtn.title = 'Edit Item';
+            editBtn.addEventListener('click', () => openEditModal(item.id));
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = '🗑️';
+            removeBtn.title = 'Remove Item';
+            removeBtn.addEventListener('click', () => openConfirmModal(item.id, item.name));
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(removeBtn);
+          }
+          const likedBtn = document.createElement('button');
+          likedBtn.textContent = isItemLiked(item.id) ? '❤️' : '🤍';
+          likedBtn.title = 'Toggle Like';
+          likedBtn.addEventListener('click', () => toggleLike(item.id, likedBtn));
+          actionsDiv.appendChild(likedBtn);
+          card.insertAdjacentElement('afterbegin', actionsDiv);
+          inventoryListDiv.appendChild(card);
+        });
+      } else { // List view
+        const listContainer = document.createElement('div');
+        listContainer.className = 'list-view';
+        items.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'item-row';
+          const infoDiv = document.createElement('div');
+          infoDiv.className = 'item-info';
+          infoDiv.innerHTML = `<strong>${item.name}</strong> - ${item.category} (Qty: ${item.quantity})`;
+          row.appendChild(infoDiv);
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'item-actions';
+          if (!sharedMode) {
+            const editBtn = document.createElement('button');
+            editBtn.textContent = '✏️';
+            editBtn.title = 'Edit Item';
+            editBtn.addEventListener('click', () => openEditModal(item.id));
+            actionsDiv.appendChild(editBtn);
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = '🗑️';
+            removeBtn.title = 'Remove Item';
+            removeBtn.addEventListener('click', () => openConfirmModal(item.id, item.name));
+            actionsDiv.appendChild(removeBtn);
+          }
+          const likedBtn = document.createElement('button');
+          likedBtn.textContent = isItemLiked(item.id) ? '❤️' : '🤍';
+          likedBtn.title = 'Toggle Like';
+          likedBtn.addEventListener('click', () => toggleLike(item.id, likedBtn));
+          actionsDiv.appendChild(likedBtn);
+          row.appendChild(actionsDiv);
+          listContainer.appendChild(row);
+        });
+        inventoryListDiv.appendChild(listContainer);
       }
-      renderLiked();
     }
 
-    /* LIKED ITEMS */
+    /* LIKED ITEMS DISPLAY */
     function renderLiked() {
-      likedListDiv.innerHTML = '';
+      likedListDiv.innerHTML = "";
       if (liked.length === 0) {
         likedListDiv.innerHTML = '<p class="error-message">You have not liked any items yet.</p>';
         return;
       }
-      liked.forEach(item => {
-        const likedDiv = document.createElement('div');
-        likedDiv.className = 'liked-item';
-        let html = '';
-        if (item.image) {
-          html += `<img src="${item.image}" alt="${item.name}" style="width:60px; height:60px; object-fit:cover; border-radius:4px; margin-right:10px;">`;
-        }
-        html += `<strong>${item.name}</strong> (${item.category}) - Quantity: ${item.quantity}`;
-        likedDiv.innerHTML = html;
-        const removeBtn = document.createElement('button');
-        removeBtn.textContent = 'Remove';
-        removeBtn.style.marginLeft = '10px';
-        removeBtn.addEventListener('click', () => {
-          liked = liked.filter(i => i.id !== item.id);
-          renderLiked();
+      if (likedViewType === "cards") {
+        liked.forEach(item => {
+          const likedDiv = document.createElement('div');
+          likedDiv.className = 'liked-item';
+          let html = "";
+          if (item.image) {
+            html += `<img src="${item.image}" alt="${item.name}" style="width:60px; height:60px; object-fit:cover; border-radius:4px; margin-right:10px;">`;
+          }
+          html += `<strong>${item.name}</strong> (${item.category}) - Quantity: ${item.quantity}`;
+          likedDiv.innerHTML = html;
+          const removeBtn = document.createElement('button');
+          removeBtn.textContent = 'Remove';
+          removeBtn.style.marginLeft = '10px';
+          removeBtn.addEventListener('click', () => {
+            liked = liked.filter(i => i.id !== item.id);
+            renderLiked();
+          });
+          likedDiv.appendChild(removeBtn);
+          likedListDiv.appendChild(likedDiv);
         });
-        likedDiv.appendChild(removeBtn);
-        likedListDiv.appendChild(likedDiv);
-      });
+      } else { // List view for Liked
+        const listContainer = document.createElement('div');
+        listContainer.className = 'list-view';
+        liked.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'item-row';
+          const infoDiv = document.createElement('div');
+          infoDiv.className = 'item-info';
+          infoDiv.innerHTML = `<strong>${item.name}</strong> - ${item.category} (Qty: ${item.quantity})`;
+          row.appendChild(infoDiv);
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'item-actions';
+          const removeBtn = document.createElement('button');
+          removeBtn.textContent = 'Remove';
+          removeBtn.title = 'Remove';
+          removeBtn.addEventListener('click', () => {
+            liked = liked.filter(i => i.id !== item.id);
+            renderLiked();
+          });
+          actionsDiv.appendChild(removeBtn);
+          row.appendChild(actionsDiv);
+          listContainer.appendChild(row);
+        });
+        likedListDiv.appendChild(listContainer);
+      }
     }
 
     /* IN/OUT ITEMS */
     function updateInOutCategories() {
-      inoutCategorySelect.innerHTML = '';
+      inoutCategorySelect.innerHTML = "";
       const categories = new Set(inventory.map(item => item.category));
       if (categories.size === 0) {
         const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'No categories available';
+        opt.value = "";
+        opt.textContent = "No categories available";
         inoutCategorySelect.appendChild(opt);
         return;
       }
@@ -881,13 +912,13 @@
       inoutCategorySelect.selectedIndex = 0;
     }
     function updateInOutItems() {
-      inoutItemSelect.innerHTML = '';
+      inoutItemSelect.innerHTML = "";
       const selectedCategory = inoutCategorySelect.value;
       const items = inventory.filter(item => item.category === selectedCategory);
       if (items.length === 0) {
         const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'No items available';
+        opt.value = "";
+        opt.textContent = "No items available";
         inoutItemSelect.appendChild(opt);
         return;
       }
@@ -898,8 +929,8 @@
         inoutItemSelect.appendChild(opt);
       });
     }
-    inoutCategorySelect.addEventListener('change', updateInOutItems);
-    btnAdd.addEventListener('click', () => {
+    inoutCategorySelect.addEventListener("change", updateInOutItems);
+    btnAdd.addEventListener("click", () => {
       const itemId = parseInt(inoutItemSelect.value);
       const qty = parseInt(inoutQty.value);
       if (isNaN(itemId) || isNaN(qty) || qty < 1) return;
@@ -909,7 +940,7 @@
         updateInventoryDisplay();
       }
     });
-    btnRemove.addEventListener('click', () => {
+    btnRemove.addEventListener("click", () => {
       const itemId = parseInt(inoutItemSelect.value);
       const qty = parseInt(inoutQty.value);
       if (isNaN(itemId) || isNaN(qty) || qty < 1) return;
@@ -923,28 +954,28 @@
     /* NEW ITEM: CUSTOM DROPDOWN SUGGESTIONS */
     function showSuggestions(inputEl, suggestionsDiv, list) {
       const value = inputEl.value.toLowerCase().trim();
-      suggestionsDiv.innerHTML = '';
+      suggestionsDiv.innerHTML = "";
       if (!value) {
-        suggestionsDiv.style.display = 'none';
+        suggestionsDiv.style.display = "none";
         return;
       }
       const filtered = list.filter(item => item.toLowerCase().includes(value));
       if (filtered.length === 0) {
-        suggestionsDiv.style.display = 'none';
+        suggestionsDiv.style.display = "none";
         return;
       }
       filtered.forEach(suggestion => {
-        const div = document.createElement('div');
-        div.className = 'suggestion';
+        const div = document.createElement("div");
+        div.className = "suggestion";
         div.textContent = suggestion;
-        div.addEventListener('click', () => {
+        div.addEventListener("click", () => {
           inputEl.value = suggestion;
-          suggestionsDiv.innerHTML = '';
-          suggestionsDiv.style.display = 'none';
+          suggestionsDiv.innerHTML = "";
+          suggestionsDiv.style.display = "none";
         });
         suggestionsDiv.appendChild(div);
       });
-      suggestionsDiv.style.display = 'block';
+      suggestionsDiv.style.display = "block";
     }
     function updateNameSuggestions() {
       const names = Array.from(new Set(inventory.map(item => item.name)));
@@ -954,30 +985,30 @@
       const categories = Array.from(new Set(inventory.map(item => item.category)));
       showSuggestions(newCategoryInput, categorySuggestionsDiv, categories);
     }
-    newNameInput.addEventListener('input', updateNameSuggestions);
-    newCategoryInput.addEventListener('input', updateCategorySuggestions);
+    newNameInput.addEventListener("input", updateNameSuggestions);
+    newCategoryInput.addEventListener("input", updateCategorySuggestions);
 
-    /* NEW ITEM: ADD NEW ITEM */
-    btnNewAdd.addEventListener('click', () => {
+    /* NEW ITEM: ADD ITEM */
+    btnNewAdd.addEventListener("click", () => {
       const nameVal = newNameInput.value.trim();
       const catVal = newCategoryInput.value.trim();
       const qtyVal = parseInt(newQtyInput.value);
-      if (nameVal === '' || catVal === '' || isNaN(qtyVal) || qtyVal < 1) {
-        alert('Please fill in all fields correctly.');
+      if (nameVal === "" || catVal === "" || isNaN(qtyVal) || qtyVal < 1) {
+        alert("Please fill in all fields correctly.");
         return;
       }
       if (inventory.some(item => item.name.toLowerCase() === nameVal.toLowerCase())) {
-        alert('An item with that name already exists.');
+        alert("An item with that name already exists.");
         return;
       }
       const file = newImageInput.files[0];
       const addItemToLocal = (imgUrl) => {
         const newItem = { id: nextId++, name: nameVal, category: catVal, quantity: qtyVal, image: imgUrl };
         inventory.push(newItem);
-        newNameInput.value = '';
-        newCategoryInput.value = '';
-        newQtyInput.value = '1';
-        newImageInput.value = '';
+        newNameInput.value = "";
+        newCategoryInput.value = "";
+        newQtyInput.value = "1";
+        newImageInput.value = "";
         renderCategoryTabs();
         updateInventoryDisplay();
         updateInOutCategories();
@@ -987,11 +1018,11 @@
         uploadImageToImgbb(file)
           .then(url => addItemToLocal(url))
           .catch(err => {
-            alert('Image upload failed.');
+            alert("Image upload failed.");
             console.error(err);
           });
       } else {
-        addItemToLocal('');
+        addItemToLocal("");
       }
     });
 
@@ -999,9 +1030,9 @@
     function openConfirmModal(itemId, itemName) {
       currentRemoveId = itemId;
       confirmMessage.textContent = `Are you sure you want to remove "${itemName}"?`;
-      confirmModal.classList.add('active');
+      confirmModal.classList.add("active");
     }
-    confirmOk.addEventListener('click', () => {
+    confirmOk.addEventListener("click", () => {
       if (currentRemoveId !== null) {
         inventory = inventory.filter(i => i.id !== currentRemoveId);
         updateInventoryDisplay();
@@ -1009,11 +1040,11 @@
         updateInOutItems();
         currentRemoveId = null;
       }
-      confirmModal.classList.remove('active');
+      confirmModal.classList.remove("active");
     });
-    confirmCancel.addEventListener('click', () => {
+    confirmCancel.addEventListener("click", () => {
       currentRemoveId = null;
-      confirmModal.classList.remove('active');
+      confirmModal.classList.remove("active");
     });
 
     /* EDIT MODAL */
@@ -1023,18 +1054,18 @@
       if (!item) return;
       editName.value = item.name;
       editCategory.value = item.category;
-      editModal.classList.add('active');
+      editModal.classList.add("active");
     }
-    editSave.addEventListener('click', () => {
+    editSave.addEventListener("click", () => {
       const newNameVal = editName.value.trim();
       const newCatVal = editCategory.value.trim();
-      if (newNameVal === '' || newCatVal === '') {
-        alert('Please fill in all fields correctly.');
+      if (newNameVal === "" || newCatVal === "") {
+        alert("Please fill in all fields correctly.");
         return;
       }
       const duplicate = inventory.find(i => i.name.toLowerCase() === newNameVal.toLowerCase() && i.id !== currentEditId);
       if (duplicate) {
-        alert('Another item with that name already exists.');
+        alert("Another item with that name already exists.");
         return;
       }
       const item = inventory.find(i => i.id === currentEditId);
@@ -1042,16 +1073,16 @@
         item.name = newNameVal;
         item.category = newCatVal;
       }
-      editModal.classList.remove('active');
+      editModal.classList.remove("active");
       currentEditId = null;
       renderCategoryTabs();
       updateInventoryDisplay();
       updateInOutCategories();
       updateInOutItems();
     });
-    editCancel.addEventListener('click', () => {
+    editCancel.addEventListener("click", () => {
       currentEditId = null;
-      editModal.classList.remove('active');
+      editModal.classList.remove("active");
     });
 
     /* IMAGE UPLOAD */
@@ -1059,13 +1090,13 @@
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const base64 = e.target.result.split(',')[1];
+          const base64 = e.target.result.split(",")[1];
           try {
             const formData = new URLSearchParams();
-            formData.append('key', '3f1b77bcc1d4b241c00c5c3f27216041');
-            formData.append('image', base64);
-            const response = await fetch('https://api.imgbb.com/1/upload', {
-              method: 'POST',
+            formData.append("key", "3f1b77bcc1d4b241c00c5c3f27216041");
+            formData.append("image", base64);
+            const response = await fetch("https://api.imgbb.com/1/upload", {
+              method: "POST",
               body: formData
             });
             const result = await response.json();
@@ -1084,7 +1115,7 @@
     }
 
     /* DOMContentLoaded */
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
       initializeApp();
       loadSharedData();
     });
