@@ -114,7 +114,7 @@
                   inset -2px -2px 5px rgba(255,255,255,0.5);
     }
 
-    /* Inventory Cards with slight neumorphic effect */
+    /* Inventory Cards */
     #inventory-list {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -170,6 +170,70 @@
     .card-actions button:hover {
       color: #0a3574;
       transform: translateY(-2px);
+    }
+
+    /* Improved UI for In/Out Items Tab */
+    #content-inout .form-group {
+      margin-bottom: 16px;
+    }
+    #content-inout label {
+      font-size: 1.1em;
+      margin-bottom: 6px;
+    }
+    #content-inout select,
+    #content-inout input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    #content-inout button {
+      width: 48%;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #b2ebf2;
+      color: #0d47a1;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #content-inout button:hover {
+      background: #80deea;
+    }
+    #content-inout button:first-of-type {
+      margin-right: 4%;
+    }
+
+    /* Improved UI for New Item Tab */
+    #content-new .form-group {
+      margin-bottom: 16px;
+    }
+    #content-new label {
+      font-size: 1.1em;
+      margin-bottom: 6px;
+    }
+    #content-new input[type="text"],
+    #content-new input[type="number"],
+    #content-new input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    #content-new button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #b2ebf2;
+      color: #0d47a1;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #content-new button:hover {
+      background: #80deea;
     }
 
     /* Export Buttons */
@@ -423,7 +487,6 @@
     <!-- Inventory Tab -->
     <div id="content-inventory" class="tab-content active">
       <h2>Inventory</h2>
-      <!-- Export button for Inventory -->
       <button id="btn-export-inventory" class="export-btn">Export Inventory</button>
       <div id="category-tabs" class="sub-tabs"></div>
       <div id="inventory-list"></div>
@@ -444,8 +507,10 @@
         <label for="inout-qty">Quantity:</label>
         <input type="number" id="inout-qty" value="1" min="1">
       </div>
-      <button id="btn-add">Add</button>
-      <button id="btn-remove">Remove</button>
+      <div style="display: flex; gap: 4%;">
+        <button id="btn-add">Add</button>
+        <button id="btn-remove">Remove</button>
+      </div>
     </div>
     
     <!-- New Item Tab -->
@@ -475,7 +540,6 @@
     <!-- Liked Tab -->
     <div id="content-liked" class="tab-content">
       <h2>Liked</h2>
-      <!-- Export button for Liked -->
       <button id="btn-export-liked" class="export-btn">Export Liked</button>
       <button id="btn-share-liked">Share Liked</button>
       <div id="liked-list"></div>
@@ -521,7 +585,7 @@
     let activeCategoryTab = "All";
     let currentRemoveId = null;
     let currentEditId = null;
-    let sharedMode = false; // Set to true when "data" parameter is used
+    let sharedMode = false; // true if shared view
 
     /* DOM REFERENCES */
     const tabs = document.querySelectorAll('.tab');
@@ -581,7 +645,7 @@
       });
     });
 
-    /* INITIALIZE NORMAL APP */
+    /* INITIALIZE APP */
     function initializeApp() {
       renderCategoryTabs();
       updateInOutCategories();
@@ -595,13 +659,10 @@
         alert("No data to export.");
         return;
       }
-      // Prepare CSV header
       const header = ["ID", "Name", "Category", "Quantity", "Image"];
-      // Map each item to CSV row
       const csvRows = [];
       csvRows.push(header.join(","));
       data.forEach(item => {
-        // Escape double quotes in text fields and wrap fields in quotes
         const row = [
           item.id,
           `"${item.name.replace(/"/g, '""')}"`,
@@ -620,8 +681,6 @@
       a.click();
       URL.revokeObjectURL(url);
     }
-
-    // Export Inventory based on selected category (sub-tab)
     btnExportInventory.addEventListener('click', () => {
       let exportData = [];
       if (activeCategoryTab === "All") {
@@ -631,8 +690,6 @@
       }
       exportCSV(exportData, "inventory_export.csv");
     });
-
-    // Export Liked Items
     btnExportLiked.addEventListener('click', () => {
       exportCSV(liked, "liked_export.csv");
     });
@@ -665,7 +722,6 @@
           console.error('Error decoding shared liked data:', err);
         }
       }
-      
       if (dataParam) {
         try {
           const decoded = atob(dataParam);
@@ -864,7 +920,7 @@
       }
     });
 
-    /* NEW ITEM: Custom Dropdown Suggestions */
+    /* NEW ITEM: CUSTOM DROPDOWN SUGGESTIONS */
     function showSuggestions(inputEl, suggestionsDiv, list) {
       const value = inputEl.value.toLowerCase().trim();
       suggestionsDiv.innerHTML = '';
@@ -901,7 +957,7 @@
     newNameInput.addEventListener('input', updateNameSuggestions);
     newCategoryInput.addEventListener('input', updateCategorySuggestions);
 
-    /* NEW ITEM: Add Item */
+    /* NEW ITEM: ADD NEW ITEM */
     btnNewAdd.addEventListener('click', () => {
       const nameVal = newNameInput.value.trim();
       const catVal = newCategoryInput.value.trim();
@@ -1027,7 +1083,7 @@
       });
     }
 
-    /* DOMContentLoaded: Initialize then load shared data */
+    /* DOMContentLoaded */
     document.addEventListener('DOMContentLoaded', () => {
       initializeApp();
       loadSharedData();
