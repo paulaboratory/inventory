@@ -22,8 +22,7 @@
       box-shadow: 10px 10px 20px rgba(0,0,0,0.1),
                   -5px -5px 15px rgba(255,255,255,0.7);
     }
-
-    /* Header with horizontally aligned icons */
+    /* Header */
     .header {
       display: flex;
       align-items: center;
@@ -55,8 +54,7 @@
       box-shadow: 2px 2px 5px rgba(0,0,0,0.15),
                   -2px -2px 5px rgba(255,255,255,0.7);
     }
-
-    /* Tabs with slight neumorphic style */
+    /* Tabs */
     .tabs {
       display: flex;
       border-bottom: 2px solid #b2ebf2;
@@ -89,7 +87,6 @@
     .tab-content.active {
       display: block;
     }
-
     /* Category Sub-Tabs */
     .sub-tabs {
       display: flex;
@@ -113,7 +110,6 @@
       box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2),
                   inset -2px -2px 5px rgba(255,255,255,0.5);
     }
-
     /* Inventory Cards */
     #inventory-list {
       display: grid;
@@ -171,8 +167,7 @@
       color: #0a3574;
       transform: translateY(-2px);
     }
-
-    /* Control Panel for Inventory & Liked Tabs */
+    /* Control Panel */
     .control-panel {
       display: flex;
       flex-wrap: wrap;
@@ -202,8 +197,7 @@
     .control-panel .view-toggle button:hover {
       background: #80deea;
     }
-
-    /* Improved UI for In/Out Items Tab */
+    /* In/Out Items Tab */
     #content-inout .form-group {
       margin-bottom: 16px;
     }
@@ -235,8 +229,7 @@
     #content-inout button:first-of-type {
       margin-right: 4%;
     }
-
-    /* Improved UI for New Item Tab */
+    /* New Item Tab */
     #content-new .form-group {
       margin-bottom: 16px;
     }
@@ -266,8 +259,7 @@
     #content-new button:hover {
       background: #80deea;
     }
-
-    /* Liked Items */
+    /* Liked Tab */
     #liked-list {
       margin-top: 10px;
     }
@@ -306,7 +298,6 @@
     #btn-share-liked:hover {
       background: #80deea;
     }
-
     /* Modals */
     .modal {
       position: fixed;
@@ -369,7 +360,6 @@
     .modal-content button:hover {
       background: #80deea;
     }
-
     /* Custom Dropdown */
     .custom-dropdown {
       position: relative;
@@ -395,7 +385,7 @@
       background: #b2ebf2;
     }
 
-    /* ---------- DARK MODE ---------- */
+    /* DARK MODE */
     .night-mode body {
       background: #121212;
       color: #e0e0e0;
@@ -616,10 +606,11 @@
     let currentEditId = null;
     let sharedMode = false; // true if shared (read-only) view
 
-    // Inventory and Liked controls
+    // For Inventory Tab Controls
     let inventorySearchTerm = "";
     let inventorySortOption = "name_asc"; // name_asc, name_desc, qty_asc, qty_desc
     let inventoryViewType = "cards"; // "cards" or "list"
+    // For Liked Tab Controls
     let likedViewType = "cards"; // "cards" or "list"
 
     /* DOM REFERENCES */
@@ -644,12 +635,12 @@
     const btnExportLiked = document.getElementById('btn-export-liked');
     const btnShareLiked = document.getElementById('btn-share-liked');
 
-    // Control Panel Elements for Inventory Tab
+    // Inventory Tab Control Panel
     const inventorySearchInput = document.getElementById('inventory-search');
     const inventorySortSelect = document.getElementById('inventory-sort');
     const inventoryViewCardsBtn = document.getElementById('inventory-view-cards');
     const inventoryViewListBtn = document.getElementById('inventory-view-list');
-    // For Liked Tab view toggle
+    // Liked Tab view toggle
     const likedViewCardsBtn = document.getElementById('liked-view-cards');
     const likedViewListBtn = document.getElementById('liked-view-list');
 
@@ -806,7 +797,7 @@
       inventorySortOption = e.target.value;
       updateInventoryDisplay();
     });
-    if(inventoryViewCardsBtn && inventoryViewListBtn) {
+    if (inventoryViewCardsBtn && inventoryViewListBtn) {
       inventoryViewCardsBtn.addEventListener("click", () => {
         inventoryViewType = "cards";
         inventoryViewCardsBtn.classList.add("active");
@@ -820,7 +811,7 @@
         updateInventoryDisplay();
       });
     }
-    if(likedViewCardsBtn && likedViewListBtn) {
+    if (likedViewCardsBtn && likedViewListBtn) {
       likedViewCardsBtn.addEventListener("click", () => {
         likedViewType = "cards";
         likedViewCardsBtn.classList.add("active");
@@ -1117,13 +1108,14 @@
       const addItemToLocal = (imgUrl) => {
         const newItem = { id: nextId++, name: nameVal, category: catVal, quantity: qtyVal, image: imgUrl };
         inventory.push(newItem);
-        // Clear new item form and reset search field to show new item immediately
+        // Reset the New Item form and clear search so the new item appears
         newNameInput.value = "";
         newCategoryInput.value = "";
         newQtyInput.value = "1";
         newImageInput.value = "";
         inventorySearchInput.value = "";
         inventorySearchTerm = "";
+        activeCategoryTab = "All";
         renderCategoryTabs();
         updateInventoryDisplay();
         updateInOutCategories();
