@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inventory App</title>
+  <title>Inventory App with Image Backup</title>
   <style>
     /* ---------- LIGHT THEME ---------- */
     body {
@@ -68,7 +68,7 @@
     .tab-content.active {
       display: block;
     }
-    /* Control Panel (for Inventory and Liked tabs) */
+    /* Control Panel */
     .control-panel {
       display: flex;
       gap: 10px;
@@ -153,7 +153,7 @@
     .list-view .item-row:last-child {
       border-bottom: none;
     }
-    /* In/Out & New Item Forms */
+    /* Form Groups */
     .form-group {
       margin-bottom: 16px;
     }
@@ -169,10 +169,10 @@
       border: 1px solid #ccc;
       border-radius: 8px;
     }
+    /* Buttons */
     button {
       cursor: pointer;
     }
-    /* Buttons */
     #btn-add, #btn-remove, #btn-new-add {
       width: 100%;
       padding: 10px;
@@ -186,7 +186,6 @@
     #btn-add:hover, #btn-remove:hover, #btn-new-add:hover {
       background: #80deea;
     }
-    /* Export & Share buttons */
     .export-btn, #btn-share-liked {
       padding: 8px 12px;
       border: none;
@@ -214,7 +213,7 @@
       background: #0d47a1;
       color: #fff;
     }
-    /* Modal */
+    /* Modals */
     .modal {
       position: fixed;
       top: 0;
@@ -246,7 +245,6 @@
       justify-content: flex-end;
       gap: 10px;
     }
-
     /* ---------- DARK MODE ---------- */
     .night-mode body {
       background: #121212;
@@ -448,16 +446,15 @@
     const btnExportLiked = document.getElementById('btn-export-liked');
     const btnShareLiked = document.getElementById('btn-share-liked');
 
-    // Control Panel elements for Inventory
+    // Control Panel Elements for Inventory
     const inventorySearchInput = document.getElementById('inventory-search');
     const inventorySortSelect = document.getElementById('inventory-sort');
     const inventoryViewCardsBtn = document.getElementById('inventory-view-cards');
     const inventoryViewListBtn = document.getElementById('inventory-view-list');
-    // Liked tab view toggle
+    // Liked Tab view toggle
     const likedViewCardsBtn = document.getElementById('liked-view-cards');
     const likedViewListBtn = document.getElementById('liked-view-list');
 
-    // Modal elements
     const confirmModal = document.getElementById('confirm-modal');
     const confirmMessage = document.getElementById('confirm-message');
     const confirmOk = document.getElementById('confirm-ok');
@@ -468,7 +465,7 @@
     const editSave = document.getElementById('edit-save');
     const editCancel = document.getElementById('edit-cancel');
 
-    /* HEADER BUTTONS - Set up once */
+    /* HEADER BUTTONS - Set up Once */
     document.addEventListener("DOMContentLoaded", () => {
       const btnSaveBackup = document.getElementById('btn-save-backup');
       const btnLoadBackup = document.getElementById('btn-load-backup');
@@ -477,6 +474,7 @@
       const backupFileInput = document.getElementById('backup-file');
 
       btnSaveBackup.addEventListener("click", () => {
+        // Save backup including the backup image data if available
         const dataStr = JSON.stringify(inventory, null, 2);
         const blob = new Blob([dataStr], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
@@ -537,7 +535,6 @@
         tab.classList.add("active");
         const contentId = "content-" + tab.id.split("-")[1];
         document.getElementById(contentId).classList.add("active");
-        // When switching tabs, update inventory/in-out/liked displays
         if (tab.id === "tab-inventory" || tab.id === "tab-inout" || tab.id === "tab-liked") {
           renderCategoryTabs();
           updateInventoryDisplay();
@@ -564,7 +561,7 @@
         alert("No data to export.");
         return;
       }
-      const header = ["ID", "Name", "Category", "Quantity", "Image"];
+      const header = ["ID", "Name", "Category", "Quantity", "Image", "Backup"];
       const csvRows = [header.join(",")];
       data.forEach(item => {
         const row = [
@@ -572,7 +569,8 @@
           `"${item.name.replace(/"/g, '""')}"`,
           `"${item.category.replace(/"/g, '""')}"`,
           item.quantity,
-          `"${item.image}"`
+          `"${item.image}"`,
+          item.backup ? `"${item.backup}"` : ""
         ];
         csvRows.push(row.join(","));
       });
@@ -634,7 +632,6 @@
     /* RENDER CATEGORY TABS */
     function renderCategoryTabs() {
       categoryTabsDiv.innerHTML = "";
-      const categories = new Set(inventory.map(item => item.category));
       const all = document.createElement("div");
       all.className = "category-tab" + (activeCategoryTab === "All" ? " active" : "");
       all.textContent = "All";
@@ -644,6 +641,7 @@
         updateInventoryDisplay();
       });
       categoryTabsDiv.appendChild(all);
+      const categories = new Set(inventory.map(item => item.category));
       categories.forEach(cat => {
         const tab = document.createElement("div");
         tab.className = "category-tab" + (activeCategoryTab === cat ? " active" : "");
@@ -771,7 +769,7 @@
       renderLiked();
     }
 
-    /* LIKED ITEMS DISPLAY */
+    /* RENDER LIKED ITEMS */
     function renderLiked() {
       likedListDiv.innerHTML = "";
       if (liked.length === 0) {
@@ -797,7 +795,7 @@
           likedDiv.appendChild(removeBtn);
           likedListDiv.appendChild(likedDiv);
         });
-      } else { // List view for liked
+      } else {
         const listContainer = document.createElement("div");
         listContainer.className = "list-view";
         liked.forEach(item => {
@@ -823,7 +821,7 @@
       }
     }
 
-    /* IN/OUT ITEMS */
+    /* UPDATE IN/OUT ITEMS */
     function updateInOutCategories() {
       inoutCategorySelect.innerHTML = "";
       const categories = new Set(inventory.map(item => item.category));
@@ -933,10 +931,11 @@
         return;
       }
       const file = newImageInput.files[0];
-      const addItemToLocal = (imgUrl) => {
-        const newItem = { id: nextId++, name: nameVal, category: catVal, quantity: qtyVal, image: imgUrl };
+      // Function to add new item into inventory (with backup image data if available)
+      const addItemToLocal = (displayUrl, backupData) => {
+        const newItem = { id: nextId++, name: nameVal, category: catVal, quantity: qtyVal, image: displayUrl, backup: backupData || null };
         inventory.push(newItem);
-        // Reset New Item form and clear search/filters so new item shows
+        // Reset new item form and clear search/filters
         newNameInput.value = "";
         newCategoryInput.value = "";
         newQtyInput.value = "1";
@@ -953,13 +952,15 @@
       };
       if (file) {
         uploadImageToImgbb(file)
-          .then(url => addItemToLocal(url))
+          .then(result => {
+            addItemToLocal(result.display_url, result.backup_data);
+          })
           .catch(err => {
             alert("Image upload failed.");
             console.error(err);
           });
       } else {
-        addItemToLocal("");
+        addItemToLocal("", "");
       }
     });
 
@@ -1022,12 +1023,13 @@
       editModal.classList.remove("active");
     });
 
-    /* IMAGE UPLOAD */
+    /* IMAGE UPLOAD FUNCTION */
     function uploadImageToImgbb(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const base64 = e.target.result.split(",")[1];
+          const fullDataUrl = e.target.result; // full data URL (backup)
+          const base64 = fullDataUrl.split(",")[1];
           try {
             const formData = new URLSearchParams();
             formData.append("key", "3f1b77bcc1d4b241c00c5c3f27216041");
@@ -1038,7 +1040,8 @@
             });
             const result = await response.json();
             if (result.success) {
-              resolve(result.data.display_url);
+              // Return both the imgbb URL and the full backup data URL
+              resolve({ display_url: result.data.display_url, backup_data: fullDataUrl });
             } else {
               reject(result.error);
             }
