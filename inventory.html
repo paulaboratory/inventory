@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inventory App with Neumorphic Style</title>
+  <title>Inventory App with Neumorphic Style & Export</title>
   <style>
     /* ---------- NEUMORPHIC / LIGHT THEME (DEFAULT) ---------- */
     body {
@@ -78,6 +78,7 @@
     .tab.active {
       background: #ffffff;
       border-bottom: 3px solid #0d47a1;
+      color: #0d47a1;
     }
     .tab:hover {
       background: #ffffff;
@@ -171,6 +172,24 @@
       transform: translateY(-2px);
     }
 
+    /* Export Buttons */
+    .export-btn {
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      font-size: 1em;
+      cursor: pointer;
+      background: #b2ebf2;
+      color: #0d47a1;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1),
+                  -2px -2px 5px rgba(255,255,255,0.7);
+      transition: background 0.3s;
+    }
+    .export-btn:hover {
+      background: #80deea;
+    }
+
     /* Liked Items */
     #liked-list {
       margin-top: 10px;
@@ -211,7 +230,7 @@
       background: #80deea;
     }
 
-    /* Modals - Neumorphic Container */
+    /* Modals - Neumorphic */
     .modal {
       position: fixed;
       top: 0;
@@ -274,7 +293,32 @@
       background: #80deea;
     }
 
-    /* Dark Mode Overrides (Neumorphic) */
+    /* Custom Dropdown for New Item Tab */
+    .custom-dropdown {
+      position: relative;
+    }
+    .suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1px solid #ccc;
+      max-height: 150px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+    }
+    .suggestion {
+      padding: 8px;
+      cursor: pointer;
+      color: #0d47a1;
+    }
+    .suggestion:hover {
+      background: #b2ebf2;
+    }
+
+    /* ---------- DARK MODE OVERRIDES ---------- */
     .night-mode body {
       background: #0d1b2a;
       color: #e0f7fa;
@@ -379,6 +423,8 @@
     <!-- Inventory Tab -->
     <div id="content-inventory" class="tab-content active">
       <h2>Inventory</h2>
+      <!-- Export button for Inventory -->
+      <button id="btn-export-inventory" class="export-btn">Export Inventory</button>
       <div id="category-tabs" class="sub-tabs"></div>
       <div id="inventory-list"></div>
     </div>
@@ -429,6 +475,8 @@
     <!-- Liked Tab -->
     <div id="content-liked" class="tab-content">
       <h2>Liked</h2>
+      <!-- Export button for Liked -->
+      <button id="btn-export-liked" class="export-btn">Export Liked</button>
       <button id="btn-share-liked">Share Liked</button>
       <div id="liked-list"></div>
     </div>
@@ -466,16 +514,16 @@
   </div>
   
   <script>
-    /* GLOBALS */
+    /* GLOBAL VARIABLES */
     let inventory = [];
     let liked = [];
     let nextId = 1;
     let activeCategoryTab = "All";
     let currentRemoveId = null;
     let currentEditId = null;
-    let sharedMode = false;
+    let sharedMode = false; // Set to true when "data" parameter is used
 
-    /* DOM Refs */
+    /* DOM REFERENCES */
     const tabs = document.querySelectorAll('.tab');
     const contents = document.querySelectorAll('.tab-content');
     const categoryTabsDiv = document.getElementById('category-tabs');
@@ -493,6 +541,8 @@
     const newImageInput = document.getElementById('new-image');
     const btnNewAdd = document.getElementById('btn-new-add');
     const likedListDiv = document.getElementById('liked-list');
+    const btnExportInventory = document.getElementById('btn-export-inventory');
+    const btnExportLiked = document.getElementById('btn-export-liked');
     const confirmModal = document.getElementById('confirm-modal');
     const confirmMessage = document.getElementById('confirm-message');
     const confirmOk = document.getElementById('confirm-ok');
@@ -503,7 +553,7 @@
     const editSave = document.getElementById('edit-save');
     const editCancel = document.getElementById('edit-cancel');
 
-    /* Header Buttons */
+    /* HEADER BUTTONS */
     const btnSaveBackup = document.getElementById('btn-save-backup');
     const btnLoadBackup = document.getElementById('btn-load-backup');
     const btnShare = document.getElementById('btn-share');
@@ -511,7 +561,7 @@
     const nightModeToggle = document.getElementById('nightModeToggle');
     const btnShareLiked = document.getElementById('btn-share-liked');
 
-    /* Tab Switching */
+    /* TAB SWITCHING */
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         tabs.forEach(t => t.classList.remove('active'));
@@ -531,7 +581,7 @@
       });
     });
 
-    /* Initialize */
+    /* INITIALIZE NORMAL APP */
     function initializeApp() {
       renderCategoryTabs();
       updateInOutCategories();
@@ -539,11 +589,60 @@
       updateInventoryDisplay();
     }
 
-    /* Shared Data */
+    /* EXPORT FUNCTIONS */
+    function exportCSV(data, filename) {
+      if (!data || !data.length) {
+        alert("No data to export.");
+        return;
+      }
+      // Prepare CSV header
+      const header = ["ID", "Name", "Category", "Quantity", "Image"];
+      // Map each item to CSV row
+      const csvRows = [];
+      csvRows.push(header.join(","));
+      data.forEach(item => {
+        // Escape double quotes in text fields and wrap fields in quotes
+        const row = [
+          item.id,
+          `"${item.name.replace(/"/g, '""')}"`,
+          `"${item.category.replace(/"/g, '""')}"`,
+          item.quantity,
+          `"${item.image}"`
+        ];
+        csvRows.push(row.join(","));
+      });
+      const csvString = csvRows.join("\n");
+      const blob = new Blob([csvString], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Export Inventory based on selected category (sub-tab)
+    btnExportInventory.addEventListener('click', () => {
+      let exportData = [];
+      if (activeCategoryTab === "All") {
+        exportData = inventory;
+      } else {
+        exportData = inventory.filter(item => item.category === activeCategoryTab);
+      }
+      exportCSV(exportData, "inventory_export.csv");
+    });
+
+    // Export Liked Items
+    btnExportLiked.addEventListener('click', () => {
+      exportCSV(liked, "liked_export.csv");
+    });
+
+    /* SHARED DATA */
     function loadSharedData() {
       const params = new URLSearchParams(window.location.search);
       const likedDataParam = params.get('likeddata');
       const dataParam = params.get('data');
+      
       if (likedDataParam) {
         try {
           const decoded = atob(likedDataParam);
@@ -566,6 +665,7 @@
           console.error('Error decoding shared liked data:', err);
         }
       }
+      
       if (dataParam) {
         try {
           const decoded = atob(dataParam);
@@ -591,7 +691,7 @@
       return false;
     }
 
-    /* Category Tabs */
+    /* CATEGORY TABS */
     function renderCategoryTabs() {
       categoryTabsDiv.innerHTML = '';
       const categories = new Set(inventory.map(item => item.category));
@@ -610,7 +710,7 @@
       });
     }
 
-    /* Inventory Display */
+    /* INVENTORY DISPLAY */
     function updateInventoryDisplay() {
       inventoryListDiv.innerHTML = '';
       let itemsToDisplay = inventory;
@@ -633,7 +733,6 @@
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'card-actions';
         if (!sharedMode) {
-          // Edit, Remove if not in shared mode
           const editBtn = document.createElement('button');
           editBtn.textContent = '✏️';
           editBtn.title = 'Edit Item';
@@ -659,7 +758,6 @@
     }
     function toggleLike(itemId, btn) {
       if (isItemLiked(itemId)) {
-        // Unliked
         liked = liked.filter(i => i.id !== itemId);
         btn.classList.add('unliked-animation');
         setTimeout(() => {
@@ -667,7 +765,6 @@
           btn.textContent = '🤍';
         }, 300);
       } else {
-        // Liked
         const item = inventory.find(i => i.id === itemId);
         if (!item) return;
         liked.push({ id: item.id, name: item.name, category: item.category, image: item.image, quantity: 1 });
@@ -680,7 +777,7 @@
       renderLiked();
     }
 
-    /* Liked Items */
+    /* LIKED ITEMS */
     function renderLiked() {
       likedListDiv.innerHTML = '';
       if (liked.length === 0) {
@@ -708,7 +805,7 @@
       });
     }
 
-    /* In/Out Items */
+    /* IN/OUT ITEMS */
     function updateInOutCategories() {
       inoutCategorySelect.innerHTML = '';
       const categories = new Set(inventory.map(item => item.category));
@@ -767,7 +864,44 @@
       }
     });
 
-    /* New Item */
+    /* NEW ITEM: Custom Dropdown Suggestions */
+    function showSuggestions(inputEl, suggestionsDiv, list) {
+      const value = inputEl.value.toLowerCase().trim();
+      suggestionsDiv.innerHTML = '';
+      if (!value) {
+        suggestionsDiv.style.display = 'none';
+        return;
+      }
+      const filtered = list.filter(item => item.toLowerCase().includes(value));
+      if (filtered.length === 0) {
+        suggestionsDiv.style.display = 'none';
+        return;
+      }
+      filtered.forEach(suggestion => {
+        const div = document.createElement('div');
+        div.className = 'suggestion';
+        div.textContent = suggestion;
+        div.addEventListener('click', () => {
+          inputEl.value = suggestion;
+          suggestionsDiv.innerHTML = '';
+          suggestionsDiv.style.display = 'none';
+        });
+        suggestionsDiv.appendChild(div);
+      });
+      suggestionsDiv.style.display = 'block';
+    }
+    function updateNameSuggestions() {
+      const names = Array.from(new Set(inventory.map(item => item.name)));
+      showSuggestions(newNameInput, nameSuggestionsDiv, names);
+    }
+    function updateCategorySuggestions() {
+      const categories = Array.from(new Set(inventory.map(item => item.category)));
+      showSuggestions(newCategoryInput, categorySuggestionsDiv, categories);
+    }
+    newNameInput.addEventListener('input', updateNameSuggestions);
+    newCategoryInput.addEventListener('input', updateCategorySuggestions);
+
+    /* NEW ITEM: Add Item */
     btnNewAdd.addEventListener('click', () => {
       const nameVal = newNameInput.value.trim();
       const catVal = newCategoryInput.value.trim();
@@ -805,7 +939,7 @@
       }
     });
 
-    /* Confirmation Modal */
+    /* CONFIRMATION MODAL */
     function openConfirmModal(itemId, itemName) {
       currentRemoveId = itemId;
       confirmMessage.textContent = `Are you sure you want to remove "${itemName}"?`;
@@ -826,7 +960,7 @@
       confirmModal.classList.remove('active');
     });
 
-    /* Edit Modal */
+    /* EDIT MODAL */
     function openEditModal(itemId) {
       currentEditId = itemId;
       const item = inventory.find(i => i.id === itemId);
@@ -864,7 +998,7 @@
       editModal.classList.remove('active');
     });
 
-    /* Upload to imgbb */
+    /* IMAGE UPLOAD */
     function uploadImageToImgbb(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -893,80 +1027,9 @@
       });
     }
 
-    /* Backup / Share / Night Mode */
-    const btnSaveBackup = document.getElementById('btn-save-backup');
-    const btnLoadBackup = document.getElementById('btn-load-backup');
-    const backupFileInput = document.getElementById('backup-file');
-    const btnShare = document.getElementById('btn-share');
-    const nightModeToggle = document.getElementById('nightModeToggle');
-    const btnShareLiked = document.getElementById('btn-share-liked');
-
-    btnSaveBackup.addEventListener('click', () => {
-      const dataStr = JSON.stringify(inventory, null, 2);
-      const blob = new Blob([dataStr], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'inventory_backup.txt';
-      a.click();
-      URL.revokeObjectURL(url);
-    });
-    btnLoadBackup.addEventListener('click', () => {
-      backupFileInput.click();
-    });
-    backupFileInput.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const loadedInventory = JSON.parse(e.target.result);
-          if (Array.isArray(loadedInventory)) {
-            inventory = loadedInventory;
-            nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
-            renderCategoryTabs();
-            updateInventoryDisplay();
-            updateInOutCategories();
-            updateInOutItems();
-          } else {
-            alert('Invalid backup file format.');
-          }
-        } catch (err) {
-          alert('Error reading backup file.');
-        }
-      };
-      reader.readAsText(file);
-    });
-    btnShare.addEventListener('click', () => {
-      const dataStr = JSON.stringify(inventory);
-      const encodedData = btoa(dataStr);
-      const shareableLink = window.location.origin + window.location.pathname + '?data=' + encodeURIComponent(encodedData);
-      navigator.clipboard.writeText(shareableLink).then(() => {
-        alert('Shareable link copied to clipboard:\n' + shareableLink);
-      }).catch(err => {
-        prompt('Copy this link:', shareableLink);
-      });
-    });
-    nightModeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('night-mode');
-      nightModeToggle.textContent = document.body.classList.contains('night-mode') ? '☀️' : '🌙';
-    });
-    btnShareLiked.addEventListener('click', () => {
-      const dataStr = JSON.stringify(liked);
-      const encodedData = btoa(dataStr);
-      const shareableLink = window.location.origin + window.location.pathname + '?likeddata=' + encodeURIComponent(encodedData);
-      navigator.clipboard.writeText(shareableLink).then(() => {
-        alert('Shareable liked link copied to clipboard:\n' + shareableLink);
-      }).catch(err => {
-        prompt('Copy this link:', shareableLink);
-      });
-    });
-
-    /* DOMContentLoaded */
+    /* DOMContentLoaded: Initialize then load shared data */
     document.addEventListener('DOMContentLoaded', () => {
-      // Normal initialization
       initializeApp();
-      // Then check if there's shared data
       loadSharedData();
     });
   </script>
