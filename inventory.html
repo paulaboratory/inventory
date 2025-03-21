@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inventory App with Neumorphic Style, Export, & Filters</title>
+  <title>Inventory App with Neumorphic Style & Export</title>
   <style>
     /* ---------- NEUMORPHIC / LIGHT THEME (DEFAULT) ---------- */
     body {
@@ -54,37 +54,6 @@
       transform: scale(1.1);
       box-shadow: 2px 2px 5px rgba(0,0,0,0.15),
                   -2px -2px 5px rgba(255,255,255,0.7);
-    }
-
-    /* Control Panel in Inventory & Liked Tabs */
-    .control-panel {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    .control-panel input[type="text"],
-    .control-panel select {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      flex: 1;
-      min-width: 150px;
-    }
-    .control-panel .view-toggle button {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 10px;
-      background: #b2ebf2;
-      color: #0d47a1;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .control-panel .view-toggle button.active {
-      background: #80deea;
-    }
-    .control-panel .view-toggle button:hover {
-      background: #80deea;
     }
 
     /* Tabs with slight neumorphic style */
@@ -203,23 +172,99 @@
       transform: translateY(-2px);
     }
 
-    /* List view for Inventory and Liked */
-    .list-view .item-row {
+    /* Control Panel for Inventory & Liked Tabs */
+    .control-panel {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px;
-      border-bottom: 1px solid #ccc;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
     }
-    .list-view .item-row:last-child {
-      border-bottom: none;
-    }
-    .list-view .item-info {
+    .control-panel input[type="text"],
+    .control-panel select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
       flex: 1;
+      min-width: 150px;
     }
-    .list-view .item-actions button {
-      margin-left: 10px;
-      font-size: 1.2em;
+    .control-panel .view-toggle button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 10px;
+      background: #b2ebf2;
+      color: #0d47a1;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .control-panel .view-toggle button.active {
+      background: #80deea;
+    }
+    .control-panel .view-toggle button:hover {
+      background: #80deea;
+    }
+
+    /* Improved UI for In/Out Items Tab */
+    #content-inout .form-group {
+      margin-bottom: 16px;
+    }
+    #content-inout label {
+      font-size: 1.1em;
+      margin-bottom: 6px;
+    }
+    #content-inout select,
+    #content-inout input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    #content-inout button {
+      width: 48%;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #b2ebf2;
+      color: #0d47a1;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #content-inout button:hover {
+      background: #80deea;
+    }
+    #content-inout button:first-of-type {
+      margin-right: 4%;
+    }
+
+    /* Improved UI for New Item Tab */
+    #content-new .form-group {
+      margin-bottom: 16px;
+    }
+    #content-new label {
+      font-size: 1.1em;
+      margin-bottom: 6px;
+    }
+    #content-new input[type="text"],
+    #content-new input[type="number"],
+    #content-new input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1);
+    }
+    #content-new button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #b2ebf2;
+      color: #0d47a1;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #content-new button:hover {
+      background: #80deea;
     }
 
     /* Liked Items */
@@ -455,7 +500,7 @@
     <!-- Inventory Tab -->
     <div id="content-inventory" class="tab-content active">
       <h2>Inventory</h2>
-      <!-- Control Panel: Search, Sort, and View Toggle -->
+      <!-- Control Panel -->
       <div class="control-panel">
         <input type="text" id="inventory-search" placeholder="Search items...">
         <select id="inventory-sort">
@@ -522,7 +567,6 @@
     <!-- Liked Tab -->
     <div id="content-liked" class="tab-content">
       <h2>Liked</h2>
-      <!-- Control Panel for Liked -->
       <div class="control-panel">
         <div class="view-toggle">
           <button id="liked-view-cards" class="active">Cards</button>
@@ -567,7 +611,7 @@
   </div>
   
   <script>
-    /* GLOBAL VARIABLES */
+    // GLOBAL VARIABLES
     let inventory = [];
     let liked = [];
     let nextId = 1;
@@ -578,7 +622,7 @@
 
     // For Inventory Tab Controls
     let inventorySearchTerm = "";
-    let inventorySortOption = "name_asc"; // options: name_asc, name_desc, qty_asc, qty_desc
+    let inventorySortOption = "name_asc"; // name_asc, name_desc, qty_asc, qty_desc
     let inventoryViewType = "cards"; // "cards" or "list"
     // For Liked Tab Controls
     let likedViewType = "cards"; // "cards" or "list"
@@ -605,15 +649,16 @@
     const btnExportLiked = document.getElementById('btn-export-liked');
     const btnShareLiked = document.getElementById('btn-share-liked');
 
-    // Control panel elements for Inventory Tab
+    // Inventory Tab Control Panel Elements
     const inventorySearchInput = document.getElementById('inventory-search');
     const inventorySortSelect = document.getElementById('inventory-sort');
     const inventoryViewCardsBtn = document.getElementById('inventory-view-cards');
     const inventoryViewListBtn = document.getElementById('inventory-view-list');
-    // For Liked Tab, view toggle buttons
+    // Liked Tab view toggle
     const likedViewCardsBtn = document.getElementById('liked-view-cards');
     const likedViewListBtn = document.getElementById('liked-view-list');
 
+    // Modals
     const confirmModal = document.getElementById('confirm-modal');
     const confirmMessage = document.getElementById('confirm-message');
     const confirmOk = document.getElementById('confirm-ok');
@@ -624,27 +669,85 @@
     const editSave = document.getElementById('edit-save');
     const editCancel = document.getElementById('edit-cancel');
 
-    /* HEADER BUTTONS */
-    const btnSaveBackup = document.getElementById('btn-save-backup');
-    const btnLoadBackup = document.getElementById('btn-load-backup');
-    const btnShare = document.getElementById('btn-share');
-    const backupFileInput = document.getElementById('backup-file');
-    const nightModeToggle = document.getElementById('nightModeToggle');
+    // HEADER BUTTONS (set up once)
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnSaveBackup = document.getElementById('btn-save-backup');
+      const btnLoadBackup = document.getElementById('btn-load-backup');
+      const btnShare = document.getElementById('btn-share');
+      const nightModeToggle = document.getElementById('nightModeToggle');
+      const backupFileInput = document.getElementById('backup-file');
+
+      btnSaveBackup.addEventListener("click", () => {
+        const dataStr = JSON.stringify(inventory, null, 2);
+        const blob = new Blob([dataStr], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "inventory_backup.txt";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      btnLoadBackup.addEventListener("click", () => {
+        backupFileInput.click();
+      });
+      backupFileInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const loadedInventory = JSON.parse(e.target.result);
+            if (Array.isArray(loadedInventory)) {
+              inventory = loadedInventory;
+              nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
+              renderCategoryTabs();
+              updateInventoryDisplay();
+              updateInOutCategories();
+              updateInOutItems();
+            } else {
+              alert("Invalid backup file format.");
+            }
+          } catch (err) {
+            alert("Error reading backup file.");
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      btnShare.addEventListener("click", () => {
+        const dataStr = JSON.stringify(inventory);
+        const encodedData = btoa(dataStr);
+        const shareableLink = window.location.origin + window.location.pathname + "?data=" + encodeURIComponent(encodedData);
+        navigator.clipboard.writeText(shareableLink)
+          .then(() => {
+            alert("Shareable link copied to clipboard:\n" + shareableLink);
+          })
+          .catch(err => {
+            prompt("Copy this link:", shareableLink);
+          });
+      });
+
+      nightModeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("night-mode");
+        nightModeToggle.textContent = document.body.classList.contains("night-mode") ? "☀️" : "🌙";
+      });
+    });
 
     /* TAB SWITCHING */
     tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        contents.forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        const contentId = 'content-' + tab.id.split('-')[1];
-        document.getElementById(contentId).classList.add('active');
-        if (tab.id === 'tab-inventory' || tab.id === 'tab-inout' || tab.id === 'tab-liked') {
+      tab.addEventListener("click", () => {
+        tabs.forEach(t => t.classList.remove("active"));
+        contents.forEach(c => c.classList.remove("active"));
+        tab.classList.add("active");
+        const contentId = "content-" + tab.id.split("-")[1];
+        document.getElementById(contentId).classList.add("active");
+        if (tab.id === "tab-inventory" || tab.id === "tab-inout" || tab.id === "tab-liked") {
           renderCategoryTabs();
           updateInventoryDisplay();
           updateInOutCategories();
           updateInOutItems();
-          if (tab.id === 'tab-liked') {
+          if (tab.id === "tab-liked") {
             renderLiked();
           }
         }
@@ -679,15 +782,15 @@
         csvRows.push(row.join(","));
       });
       const csvString = csvRows.join("\n");
-      const blob = new Blob([csvString], { type: 'text/csv' });
+      const blob = new Blob([csvString], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
     }
-    btnExportInventory.addEventListener('click', () => {
+    btnExportInventory.addEventListener("click", () => {
       let exportData = [];
       if (activeCategoryTab === "All") {
         exportData = inventory;
@@ -696,55 +799,51 @@
       }
       exportCSV(exportData, "inventory_export.csv");
     });
-    btnExportLiked.addEventListener('click', () => {
+    btnExportLiked.addEventListener("click", () => {
       exportCSV(liked, "liked_export.csv");
     });
 
     /* INVENTORY TAB CONTROL PANEL */
-    // Search
-    inventorySearchInput.addEventListener('input', (e) => {
+    inventorySearchInput.addEventListener("input", (e) => {
       inventorySearchTerm = e.target.value.toLowerCase().trim();
       updateInventoryDisplay();
     });
-    // Sort
-    inventorySortSelect.addEventListener('change', (e) => {
+    inventorySortSelect.addEventListener("change", (e) => {
       inventorySortOption = e.target.value;
       updateInventoryDisplay();
     });
-    // View Toggle
-    if(inventoryViewCardsBtn && inventoryViewListBtn) {
-      inventoryViewCardsBtn.addEventListener('click', () => {
+    if (inventoryViewCardsBtn && inventoryViewListBtn) {
+      inventoryViewCardsBtn.addEventListener("click", () => {
         inventoryViewType = "cards";
-        inventoryViewCardsBtn.classList.add('active');
-        inventoryViewListBtn.classList.remove('active');
+        inventoryViewCardsBtn.classList.add("active");
+        inventoryViewListBtn.classList.remove("active");
         updateInventoryDisplay();
       });
-      inventoryViewListBtn.addEventListener('click', () => {
+      inventoryViewListBtn.addEventListener("click", () => {
         inventoryViewType = "list";
-        inventoryViewListBtn.classList.add('active');
-        inventoryViewCardsBtn.classList.remove('active');
+        inventoryViewListBtn.classList.add("active");
+        inventoryViewCardsBtn.classList.remove("active");
         updateInventoryDisplay();
       });
     }
-    // For Liked Tab view toggle
-    if(likedViewCardsBtn && likedViewListBtn) {
-      likedViewCardsBtn.addEventListener('click', () => {
+    if (likedViewCardsBtn && likedViewListBtn) {
+      likedViewCardsBtn.addEventListener("click", () => {
         likedViewType = "cards";
-        likedViewCardsBtn.classList.add('active');
-        likedViewListBtn.classList.remove('active');
+        likedViewCardsBtn.classList.add("active");
+        likedViewListBtn.classList.remove("active");
         renderLiked();
       });
-      likedViewListBtn.addEventListener('click', () => {
+      likedViewListBtn.addEventListener("click", () => {
         likedViewType = "list";
-        likedViewListBtn.classList.add('active');
-        likedViewCardsBtn.classList.remove('active');
+        likedViewListBtn.classList.add("active");
+        likedViewCardsBtn.classList.remove("active");
         renderLiked();
       });
     }
 
     /* INVENTORY DISPLAY */
     function updateInventoryDisplay() {
-      // Filter by search term and sort
+      // Apply search filter and sorting
       let items = inventory.filter(item =>
         item.name.toLowerCase().includes(inventorySearchTerm) ||
         item.category.toLowerCase().includes(inventorySearchTerm)
@@ -758,8 +857,7 @@
       } else if (inventorySortOption === "qty_desc") {
         items.sort((a, b) => b.quantity - a.quantity);
       }
-
-      // If a category is selected (not "All"), filter by category too
+      // Filter by selected category
       if (activeCategoryTab !== "All") {
         items = items.filter(item => item.category === activeCategoryTab);
       }
@@ -769,67 +867,66 @@
         inventoryListDiv.innerHTML = '<p class="error-message">No items in this category.</p>';
         return;
       }
-      // Render based on view type: cards or list
       if (inventoryViewType === "cards") {
         items.forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'inventory-card';
+          const card = document.createElement("div");
+          card.className = "inventory-card";
           let html = "";
           if (item.image) {
             html += `<img src="${item.image}" alt="${item.name}">`;
           }
           html += `<h3>${item.name}</h3><p>Category: ${item.category}</p><p>Quantity: ${item.quantity}</p>`;
           card.innerHTML = html;
-          const actionsDiv = document.createElement('div');
-          actionsDiv.className = 'card-actions';
+          const actionsDiv = document.createElement("div");
+          actionsDiv.className = "card-actions";
           if (!sharedMode) {
-            const editBtn = document.createElement('button');
-            editBtn.textContent = '✏️';
-            editBtn.title = 'Edit Item';
-            editBtn.addEventListener('click', () => openEditModal(item.id));
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = '🗑️';
-            removeBtn.title = 'Remove Item';
-            removeBtn.addEventListener('click', () => openConfirmModal(item.id, item.name));
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "✏️";
+            editBtn.title = "Edit Item";
+            editBtn.addEventListener("click", () => openEditModal(item.id));
+            const removeBtn = document.createElement("button");
+            removeBtn.textContent = "🗑️";
+            removeBtn.title = "Remove Item";
+            removeBtn.addEventListener("click", () => openConfirmModal(item.id, item.name));
             actionsDiv.appendChild(editBtn);
             actionsDiv.appendChild(removeBtn);
           }
-          const likedBtn = document.createElement('button');
-          likedBtn.textContent = isItemLiked(item.id) ? '❤️' : '🤍';
-          likedBtn.title = 'Toggle Like';
-          likedBtn.addEventListener('click', () => toggleLike(item.id, likedBtn));
+          const likedBtn = document.createElement("button");
+          likedBtn.textContent = isItemLiked(item.id) ? "❤️" : "🤍";
+          likedBtn.title = "Toggle Like";
+          likedBtn.addEventListener("click", () => toggleLike(item.id, likedBtn));
           actionsDiv.appendChild(likedBtn);
-          card.insertAdjacentElement('afterbegin', actionsDiv);
+          card.insertAdjacentElement("afterbegin", actionsDiv);
           inventoryListDiv.appendChild(card);
         });
       } else { // List view
-        const listContainer = document.createElement('div');
-        listContainer.className = 'list-view';
+        const listContainer = document.createElement("div");
+        listContainer.className = "list-view";
         items.forEach(item => {
-          const row = document.createElement('div');
-          row.className = 'item-row';
-          const infoDiv = document.createElement('div');
-          infoDiv.className = 'item-info';
+          const row = document.createElement("div");
+          row.className = "item-row";
+          const infoDiv = document.createElement("div");
+          infoDiv.className = "item-info";
           infoDiv.innerHTML = `<strong>${item.name}</strong> - ${item.category} (Qty: ${item.quantity})`;
           row.appendChild(infoDiv);
-          const actionsDiv = document.createElement('div');
-          actionsDiv.className = 'item-actions';
+          const actionsDiv = document.createElement("div");
+          actionsDiv.className = "item-actions";
           if (!sharedMode) {
-            const editBtn = document.createElement('button');
-            editBtn.textContent = '✏️';
-            editBtn.title = 'Edit Item';
-            editBtn.addEventListener('click', () => openEditModal(item.id));
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "✏️";
+            editBtn.title = "Edit Item";
+            editBtn.addEventListener("click", () => openEditModal(item.id));
             actionsDiv.appendChild(editBtn);
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = '🗑️';
-            removeBtn.title = 'Remove Item';
-            removeBtn.addEventListener('click', () => openConfirmModal(item.id, item.name));
+            const removeBtn = document.createElement("button");
+            removeBtn.textContent = "🗑️";
+            removeBtn.title = "Remove Item";
+            removeBtn.addEventListener("click", () => openConfirmModal(item.id, item.name));
             actionsDiv.appendChild(removeBtn);
           }
-          const likedBtn = document.createElement('button');
-          likedBtn.textContent = isItemLiked(item.id) ? '❤️' : '🤍';
-          likedBtn.title = 'Toggle Like';
-          likedBtn.addEventListener('click', () => toggleLike(item.id, likedBtn));
+          const likedBtn = document.createElement("button");
+          likedBtn.textContent = isItemLiked(item.id) ? "❤️" : "🤍";
+          likedBtn.title = "Toggle Like";
+          likedBtn.addEventListener("click", () => toggleLike(item.id, likedBtn));
           actionsDiv.appendChild(likedBtn);
           row.appendChild(actionsDiv);
           listContainer.appendChild(row);
@@ -847,40 +944,40 @@
       }
       if (likedViewType === "cards") {
         liked.forEach(item => {
-          const likedDiv = document.createElement('div');
-          likedDiv.className = 'liked-item';
+          const likedDiv = document.createElement("div");
+          likedDiv.className = "liked-item";
           let html = "";
           if (item.image) {
             html += `<img src="${item.image}" alt="${item.name}" style="width:60px; height:60px; object-fit:cover; border-radius:4px; margin-right:10px;">`;
           }
           html += `<strong>${item.name}</strong> (${item.category}) - Quantity: ${item.quantity}`;
           likedDiv.innerHTML = html;
-          const removeBtn = document.createElement('button');
-          removeBtn.textContent = 'Remove';
-          removeBtn.style.marginLeft = '10px';
-          removeBtn.addEventListener('click', () => {
+          const removeBtn = document.createElement("button");
+          removeBtn.textContent = "Remove";
+          removeBtn.style.marginLeft = "10px";
+          removeBtn.addEventListener("click", () => {
             liked = liked.filter(i => i.id !== item.id);
             renderLiked();
           });
           likedDiv.appendChild(removeBtn);
           likedListDiv.appendChild(likedDiv);
         });
-      } else { // List view for Liked
-        const listContainer = document.createElement('div');
-        listContainer.className = 'list-view';
+      } else { // List view for liked
+        const listContainer = document.createElement("div");
+        listContainer.className = "list-view";
         liked.forEach(item => {
-          const row = document.createElement('div');
-          row.className = 'item-row';
-          const infoDiv = document.createElement('div');
-          infoDiv.className = 'item-info';
+          const row = document.createElement("div");
+          row.className = "item-row";
+          const infoDiv = document.createElement("div");
+          infoDiv.className = "item-info";
           infoDiv.innerHTML = `<strong>${item.name}</strong> - ${item.category} (Qty: ${item.quantity})`;
           row.appendChild(infoDiv);
-          const actionsDiv = document.createElement('div');
-          actionsDiv.className = 'item-actions';
-          const removeBtn = document.createElement('button');
-          removeBtn.textContent = 'Remove';
-          removeBtn.title = 'Remove';
-          removeBtn.addEventListener('click', () => {
+          const actionsDiv = document.createElement("div");
+          actionsDiv.className = "item-actions";
+          const removeBtn = document.createElement("button");
+          removeBtn.textContent = "Remove";
+          removeBtn.title = "Remove";
+          removeBtn.addEventListener("click", () => {
             liked = liked.filter(i => i.id !== item.id);
             renderLiked();
           });
@@ -897,14 +994,14 @@
       inoutCategorySelect.innerHTML = "";
       const categories = new Set(inventory.map(item => item.category));
       if (categories.size === 0) {
-        const opt = document.createElement('option');
+        const opt = document.createElement("option");
         opt.value = "";
         opt.textContent = "No categories available";
         inoutCategorySelect.appendChild(opt);
         return;
       }
       categories.forEach(cat => {
-        const opt = document.createElement('option');
+        const opt = document.createElement("option");
         opt.value = cat;
         opt.textContent = cat;
         inoutCategorySelect.appendChild(opt);
@@ -916,14 +1013,14 @@
       const selectedCategory = inoutCategorySelect.value;
       const items = inventory.filter(item => item.category === selectedCategory);
       if (items.length === 0) {
-        const opt = document.createElement('option');
+        const opt = document.createElement("option");
         opt.value = "";
         opt.textContent = "No items available";
         inoutItemSelect.appendChild(opt);
         return;
       }
       items.forEach(item => {
-        const opt = document.createElement('option');
+        const opt = document.createElement("option");
         opt.value = item.id;
         opt.textContent = item.name;
         inoutItemSelect.appendChild(opt);
@@ -988,7 +1085,7 @@
     newNameInput.addEventListener("input", updateNameSuggestions);
     newCategoryInput.addEventListener("input", updateCategorySuggestions);
 
-    /* NEW ITEM: ADD ITEM */
+    /* NEW ITEM: ADD NEW ITEM */
     btnNewAdd.addEventListener("click", () => {
       const nameVal = newNameInput.value.trim();
       const catVal = newCategoryInput.value.trim();
@@ -1114,7 +1211,7 @@
       });
     }
 
-    /* DOMContentLoaded */
+    /* DOMContentLoaded: Initialize then load shared data */
     document.addEventListener("DOMContentLoaded", () => {
       initializeApp();
       loadSharedData();
