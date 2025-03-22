@@ -502,6 +502,19 @@
     const btnExportLiked = document.getElementById('btn-export-liked');
     const btnShareLiked = document.getElementById('btn-share-liked');
 
+    btnShareLiked.addEventListener("click", () => {
+  const dataStr = JSON.stringify(liked);
+  const encodedData = btoa(dataStr);
+  const shareableLink = window.location.origin + window.location.pathname + "?likeddata=" + encodeURIComponent(encodedData);
+  navigator.clipboard.writeText(shareableLink)
+    .then(() => {
+      alert("Shareable liked list link copied to clipboard:\n" + shareableLink);
+    })
+    .catch(err => {
+      prompt("Copy this link:", shareableLink);
+    });
+});
+
     // Control Panel Elements for Inventory
     const inventorySearchInput = document.getElementById('inventory-search');
     const inventorySortSelect = document.getElementById('inventory-sort');
