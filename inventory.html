@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inventory App - Neumorphic with History & Persistence</title>
+  <!-- Include LZ-String library from CDN for compression -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
   <style>
     /* ---------- BASE COLOR SCHEME ---------- */
     :root {
@@ -502,19 +504,6 @@
     const btnExportLiked = document.getElementById('btn-export-liked');
     const btnShareLiked = document.getElementById('btn-share-liked');
 
-    btnShareLiked.addEventListener("click", () => {
-  const dataStr = JSON.stringify(liked);
-  const encodedData = btoa(dataStr);
-  const shareableLink = window.location.origin + window.location.pathname + "?likeddata=" + encodeURIComponent(encodedData);
-  navigator.clipboard.writeText(shareableLink)
-    .then(() => {
-      alert("Shareable liked list link copied to clipboard:\n" + shareableLink);
-    })
-    .catch(err => {
-      prompt("Copy this link:", shareableLink);
-    });
-});
-
     // Control Panel Elements for Inventory
     const inventorySearchInput = document.getElementById('inventory-search');
     const inventorySortSelect = document.getElementById('inventory-sort');
@@ -565,7 +554,7 @@
       }
     }
 
-    /* Function to log events */
+    /* HISTORY LOG FUNCTIONS */
     function logEvent(message) {
       const timestamp = new Date().toLocaleString();
       historyLog.push(`${timestamp}: ${message}`);
@@ -653,6 +642,17 @@
         const shareableLink = window.location.origin + window.location.pathname + "?data=" + encodeURIComponent(encodedData);
         navigator.clipboard.writeText(shareableLink)
           .then(() => alert("Shareable link copied to clipboard:\n" + shareableLink))
+          .catch(err => prompt("Copy this link:", shareableLink));
+      });
+
+      // Liked List Share using LZ-String compression
+      btnShareLiked.addEventListener("click", () => {
+        const dataStr = JSON.stringify(liked);
+        // Compress the liked data
+        const compressed = LZString.compressToEncodedURIComponent(dataStr);
+        const shareableLink = window.location.origin + window.location.pathname + "?likeddata=" + compressed;
+        navigator.clipboard.writeText(shareableLink)
+          .then(() => alert("Shareable Liked List link copied to clipboard:\n" + shareableLink))
           .catch(err => prompt("Copy this link:", shareableLink));
       });
 
@@ -1216,8 +1216,9 @@
       const dataParam = params.get("data");
       if (likedDataParam) {
         try {
-          const decoded = atob(likedDataParam);
-          const sharedLiked = JSON.parse(decoded);
+          // Decompress liked data using LZString
+          const decompressed = LZString.decompressFromEncodedURIComponent(likedDataParam);
+          const sharedLiked = JSON.parse(decompressed);
           if (Array.isArray(sharedLiked)) {
             liked = sharedLiked;
             document.getElementById("tab-inventory").style.display = "none";
