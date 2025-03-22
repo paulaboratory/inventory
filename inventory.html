@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inventory App - Neumorphic with History Log</title>
+  <title>Inventory App - Neumorphic with History & Persistence</title>
   <style>
     /* ---------- BASE COLOR SCHEME ---------- */
     :root {
@@ -215,6 +215,7 @@
                   inset -4px -4px 8px rgba(255,255,255,0.7);
     }
     button {
+      cursor: pointer;
       border: none;
       border-radius: 12px;
       background: var(--accent);
@@ -337,7 +338,7 @@
         <input type="file" id="backup-file" accept=".json" style="display: none;">
       </div>
     </div>
-    
+
     <!-- Tabs -->
     <div class="tabs">
       <div id="tab-inventory" class="tab active">Inventory</div>
@@ -345,7 +346,7 @@
       <div id="tab-new" class="tab">New Item</div>
       <div id="tab-liked" class="tab">Liked</div>
     </div>
-    
+
     <!-- Inventory Tab -->
     <div id="content-inventory" class="tab-content active">
       <h2>Inventory</h2>
@@ -367,7 +368,7 @@
       <div class="sub-tabs" id="category-tabs"></div>
       <div id="inventory-list"></div>
     </div>
-    
+
     <!-- In/Out Items Tab -->
     <div id="content-inout" class="tab-content">
       <h2>In/Out Items</h2>
@@ -391,7 +392,7 @@
       <h3>History Log</h3>
       <div id="history-log"></div>
     </div>
-    
+
     <!-- New Item Tab -->
     <div id="content-new" class="tab-content">
       <h2>New Item</h2>
@@ -415,7 +416,7 @@
       </div>
       <button id="btn-new-add">Add New Item</button>
     </div>
-    
+
     <!-- Liked Tab -->
     <div id="content-liked" class="tab-content">
       <h2>Liked</h2>
@@ -430,7 +431,7 @@
       <div id="liked-list"></div>
     </div>
   </div>
-  
+
   <!-- Confirmation Modal -->
   <div id="confirm-modal" class="modal">
     <div class="modal-content">
@@ -442,7 +443,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Edit Modal -->
   <div id="edit-modal" class="modal">
     <div class="modal-content">
@@ -461,19 +462,17 @@
       </div>
     </div>
   </div>
-  
+
   <script>
     // GLOBAL VARIABLES
     let inventory = [];
     let liked = [];
+    let historyLog = [];
     let nextId = 1;
     let activeCategoryTab = "All";
     let currentRemoveId = null;
     let currentEditId = null;
     let sharedMode = false; // true for shared view
-
-    // Global history log array
-    let historyLog = [];
 
     // Controls for Inventory & Liked
     let inventorySearchTerm = "";
@@ -522,11 +521,43 @@
     const editSave = document.getElementById('edit-save');
     const editCancel = document.getElementById('edit-cancel');
 
+    /* LOCAL STORAGE FUNCTIONS */
+    function saveData() {
+      const appData = {
+        inventory: inventory,
+        liked: liked,
+        historyLog: historyLog
+      };
+      localStorage.setItem("appData", JSON.stringify(appData));
+    }
+    function loadData() {
+      const data = localStorage.getItem("appData");
+      if (data) {
+        try {
+          const appData = JSON.parse(data);
+          if (appData.inventory) {
+            inventory = appData.inventory;
+            nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
+          }
+          if (appData.liked) {
+            liked = appData.liked;
+          }
+          if (appData.historyLog) {
+            historyLog = appData.historyLog;
+            updateHistoryDisplay();
+          }
+        } catch (err) {
+          console.error("Error loading app data:", err);
+        }
+      }
+    }
+
     /* Function to log events */
     function logEvent(message) {
       const timestamp = new Date().toLocaleString();
       historyLog.push(`${timestamp}: ${message}`);
       updateHistoryDisplay();
+      saveData();
     }
     function updateHistoryDisplay() {
       const historyDiv = document.getElementById("history-log");
@@ -542,6 +573,7 @@
 
     /* HEADER BUTTONS - Set up Once */
     document.addEventListener("DOMContentLoaded", () => {
+      loadData();
       const btnSaveBackup = document.getElementById('btn-save-backup');
       const btnLoadBackup = document.getElementById('btn-load-backup');
       const btnShare = document.getElementById('btn-share');
@@ -549,7 +581,12 @@
       const backupFileInput = document.getElementById('backup-file');
 
       btnSaveBackup.addEventListener("click", () => {
-        const dataStr = JSON.stringify(inventory, null, 2);
+        const appData = {
+          inventory: inventory,
+          liked: liked,
+          historyLog: historyLog
+        };
+        const dataStr = JSON.stringify(appData, null, 2);
         const blob = new Blob([dataStr], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -568,17 +605,23 @@
         const reader = new FileReader();
         reader.onload = (e) => {
           try {
-            const loadedInventory = JSON.parse(e.target.result);
-            if (Array.isArray(loadedInventory)) {
-              inventory = loadedInventory;
+            const appData = JSON.parse(e.target.result);
+            if (appData.inventory && Array.isArray(appData.inventory)) {
+              inventory = appData.inventory;
               nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
-              renderCategoryTabs();
-              updateInventoryDisplay();
-              updateInOutCategories();
-              updateInOutItems();
-            } else {
-              alert("Invalid backup file format.");
             }
+            if (appData.liked) {
+              liked = appData.liked;
+            }
+            if (appData.historyLog) {
+              historyLog = appData.historyLog;
+              updateHistoryDisplay();
+            }
+            renderCategoryTabs();
+            updateInventoryDisplay();
+            updateInOutCategories();
+            updateInOutItems();
+            saveData();
           } catch (err) {
             alert("Error reading backup file.");
           }
@@ -587,7 +630,12 @@
       });
 
       btnShare.addEventListener("click", () => {
-        const dataStr = JSON.stringify(inventory);
+        const appData = {
+          inventory: inventory,
+          liked: liked,
+          historyLog: historyLog
+        };
+        const dataStr = JSON.stringify(appData);
         const encodedData = btoa(dataStr);
         const shareableLink = window.location.origin + window.location.pathname + "?data=" + encodeURIComponent(encodedData);
         navigator.clipboard.writeText(shareableLink)
@@ -824,6 +872,7 @@
         });
         inventoryListDiv.appendChild(listContainer);
       }
+      saveData();
     }
     function isItemLiked(itemId) {
       return liked.some(i => i.id === itemId);
@@ -847,6 +896,7 @@
         }, 300);
       }
       renderLiked();
+      saveData();
     }
 
     /* RENDER LIKED ITEMS */
@@ -871,6 +921,7 @@
           removeBtn.addEventListener("click", () => {
             liked = liked.filter(i => i.id !== item.id);
             renderLiked();
+            saveData();
           });
           likedDiv.appendChild(removeBtn);
           likedListDiv.appendChild(likedDiv);
@@ -892,6 +943,7 @@
           removeBtn.addEventListener("click", () => {
             liked = liked.filter(i => i.id !== item.id);
             renderLiked();
+            saveData();
           });
           actionsDiv.appendChild(removeBtn);
           row.appendChild(actionsDiv);
@@ -899,6 +951,7 @@
         });
         likedListDiv.appendChild(listContainer);
       }
+      saveData();
     }
 
     /* UPDATE IN/OUT ITEMS */
@@ -919,6 +972,7 @@
         inoutCategorySelect.appendChild(opt);
       });
       inoutCategorySelect.selectedIndex = 0;
+      updateInOutItems();
     }
     function updateInOutItems() {
       inoutItemSelect.innerHTML = "";
@@ -948,6 +1002,7 @@
         item.quantity += qty;
         updateInventoryDisplay();
         logEvent(`In: Added ${qty} to ${item.name}`);
+        saveData();
       }
     });
     btnRemove.addEventListener("click", () => {
@@ -959,6 +1014,7 @@
         item.quantity = Math.max(0, item.quantity - qty);
         updateInventoryDisplay();
         logEvent(`Out: Removed ${qty} from ${item.name}`);
+        saveData();
       }
     });
 
@@ -1017,7 +1073,7 @@
         const newItem = { id: nextId++, name: nameVal, category: catVal, quantity: qtyVal, image: displayUrl, backup: backupData || null };
         inventory.push(newItem);
         logEvent(`New item added: ${nameVal}`);
-        // Reset New Item form and clear search/filter
+        // Reset New Item form and clear search/filters
         newNameInput.value = "";
         newCategoryInput.value = "";
         newQtyInput.value = "1";
@@ -1030,6 +1086,7 @@
         updateInOutCategories();
         updateInOutItems();
         document.getElementById("tab-inventory").click();
+        saveData();
       };
       if (file) {
         uploadImageToImgbb(file)
@@ -1054,7 +1111,7 @@
     confirmOk.addEventListener("click", () => {
       if (currentRemoveId !== null) {
         const removedItem = inventory.find(i => i.id === currentRemoveId);
-        if(removedItem) {
+        if (removedItem) {
           logEvent(`Item deleted: ${removedItem.name}`);
         }
         inventory = inventory.filter(i => i.id !== currentRemoveId);
@@ -1062,6 +1119,7 @@
         updateInOutCategories();
         updateInOutItems();
         currentRemoveId = null;
+        saveData();
       }
       confirmModal.classList.remove("active");
     });
@@ -1101,6 +1159,7 @@
       updateInventoryDisplay();
       updateInOutCategories();
       updateInOutItems();
+      saveData();
     });
     editCancel.addEventListener("click", () => {
       currentEditId = null;
@@ -1112,7 +1171,7 @@
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const fullDataUrl = e.target.result;
+          const fullDataUrl = e.target.result; // backup data URL
           const base64 = fullDataUrl.split(",")[1];
           try {
             const formData = new URLSearchParams();
@@ -1164,10 +1223,15 @@
       if (dataParam) {
         try {
           const decoded = atob(dataParam);
-          const sharedInventory = JSON.parse(decoded);
-          if (Array.isArray(sharedInventory)) {
-            inventory = sharedInventory;
+          const sharedData = JSON.parse(decoded);
+          if (sharedData.inventory && Array.isArray(sharedData.inventory)) {
+            inventory = sharedData.inventory;
             nextId = inventory.reduce((max, item) => Math.max(max, item.id), 0) + 1;
+            if (sharedData.liked) liked = sharedData.liked;
+            if (sharedData.historyLog) {
+              historyLog = sharedData.historyLog;
+              updateHistoryDisplay();
+            }
             sharedMode = true;
             document.getElementById("tab-inout").style.display = "none";
             document.getElementById("tab-new").style.display = "none";
