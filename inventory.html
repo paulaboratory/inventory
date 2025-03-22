@@ -3,30 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inventory App with Image Backup</title>
+  <title>Inventory App - Neumorphic Style</title>
   <style>
-    /* ---------- LIGHT THEME ---------- */
+    /* ---------- BASE COLOR SCHEME ---------- */
+    :root {
+      --light-bg: #e0f7fa;      /* light cyan background */
+      --dark-text: #0d47a1;     /* dark blue text */
+      --card-bg: #ffffff;       /* card background */
+      --accent: #b2ebf2;        /* accent color for buttons */
+      --accent-hover: #80deea;  /* hover color for buttons */
+    }
+
+    /* ---------- NEUMORPHIC BASE STYLES ---------- */
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 20px;
-      background: #e0f7fa;
-      color: #0d47a1;
+      background: var(--light-bg);
+      color: var(--dark-text);
     }
     .container {
       max-width: 900px;
       margin: auto;
-      padding: 20px;
+      padding: 30px;
       border-radius: 20px;
-      background: #e0f7fa;
-      box-shadow: 10px 10px 20px rgba(0,0,0,0.1), -5px -5px 15px rgba(255,255,255,0.7);
+      background: var(--light-bg);
+      box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.15),
+                  -8px -8px 16px rgba(255, 255, 255, 0.7);
     }
-    /* Header */
+
+    /* ---------- HEADER ---------- */
     .header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
     .header h1 {
       margin: 0;
@@ -37,19 +48,29 @@
       gap: 15px;
     }
     .header-icons button {
-      background: none;
+      background: var(--light-bg);
       border: none;
       font-size: 1.8em;
       cursor: pointer;
-      transition: transform 0.2s;
+      padding: 10px;
+      border-radius: 50%;
+      box-shadow: 4px 4px 8px rgba(0,0,0,0.15),
+                  -4px -4px 8px rgba(255,255,255,0.7);
+      transition: all 0.2s ease-in-out;
     }
     .header-icons button:hover {
-      transform: scale(1.1);
+      transform: translateY(-2px);
+      box-shadow: 2px 2px 4px rgba(0,0,0,0.15),
+                  -2px -2px 4px rgba(255,255,255,0.7);
     }
-    /* Tabs */
+    .header-icons input {
+      display: none;
+    }
+
+    /* ---------- TABS ---------- */
     .tabs {
       display: flex;
-      border-bottom: 2px solid #b2ebf2;
+      border-bottom: 2px solid var(--accent);
       margin-bottom: 20px;
     }
     .tab {
@@ -58,9 +79,17 @@
       padding: 12px;
       cursor: pointer;
       font-weight: bold;
+      transition: all 0.3s ease;
+      background: var(--light-bg);
+      box-shadow: 4px 4px 8px rgba(0,0,0,0.15),
+                  -4px -4px 8px rgba(255,255,255,0.7);
     }
     .tab.active {
-      border-bottom: 3px solid #0d47a1;
+      background: var(--card-bg);
+      border-bottom: 3px solid var(--dark-text);
+    }
+    .tab:hover {
+      background: var(--card-bg);
     }
     .tab-content {
       display: none;
@@ -68,152 +97,167 @@
     .tab-content.active {
       display: block;
     }
-    /* Control Panel */
+
+    /* ---------- CONTROL PANEL ---------- */
     .control-panel {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
     .control-panel input[type="text"],
     .control-panel select {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      padding: 10px;
+      border: none;
+      border-radius: 12px;
+      background: var(--light-bg);
+      box-shadow: inset 4px 4px 8px rgba(0,0,0,0.15),
+                  inset -4px -4px 8px rgba(255,255,255,0.7);
       flex: 1;
       min-width: 150px;
     }
     .control-panel .view-toggle button {
-      padding: 8px 12px;
+      padding: 10px 16px;
       border: none;
-      border-radius: 8px;
-      background: #b2ebf2;
+      border-radius: 12px;
+      background: var(--accent);
       cursor: pointer;
+      box-shadow: 4px 4px 8px rgba(0,0,0,0.15),
+                  -4px -4px 8px rgba(255,255,255,0.7);
+      transition: background 0.3s ease;
     }
     .control-panel .view-toggle button.active {
-      background: #80deea;
+      background: var(--accent-hover);
     }
-    /* Inventory Cards */
+    .control-panel .view-toggle button:hover {
+      background: var(--accent-hover);
+    }
+
+    /* ---------- INVENTORY CARDS ---------- */
     #inventory-list {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 15px;
+      gap: 20px;
     }
     .inventory-card {
       position: relative;
-      background: #ffffff;
-      border-radius: 15px;
-      padding: 15px;
-      box-shadow: 3px 3px 8px rgba(0,0,0,0.1);
-      transition: transform 0.2s;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 8px 8px 16px rgba(0,0,0,0.15),
+                  -8px -8px 16px rgba(255,255,255,0.7);
+      transition: transform 0.2s ease;
     }
     .inventory-card:hover {
-      transform: translateY(-3px);
+      transform: translateY(-4px);
     }
     .inventory-card img {
       width: 100%;
       height: 150px;
       object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 10px;
+      border-radius: 12px;
+      margin-bottom: 12px;
     }
     .inventory-card h3 {
       margin: 0;
       font-size: 1.2em;
     }
     .inventory-card p {
-      margin: 5px 0;
+      margin: 8px 0;
     }
     .card-actions {
       position: absolute;
-      top: 8px;
-      right: 8px;
+      top: 12px;
+      right: 12px;
       display: flex;
-      gap: 5px;
+      gap: 8px;
     }
     .card-actions button {
-      background: #b2ebf2;
+      background: var(--light-bg);
       border: none;
       cursor: pointer;
-      padding: 4px 6px;
-      border-radius: 6px;
-      transition: transform 0.2s;
+      padding: 6px 8px;
+      border-radius: 12px;
+      box-shadow: 4px 4px 8px rgba(0,0,0,0.15),
+                  -4px -4px 8px rgba(255,255,255,0.7);
+      transition: transform 0.2s ease;
     }
     .card-actions button:hover {
       transform: translateY(-2px);
     }
-    /* List view */
+
+    /* ---------- LIST VIEW ---------- */
     .list-view .item-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px;
-      border-bottom: 1px solid #ccc;
+      padding: 12px;
+      border-radius: 12px;
+      background: var(--card-bg);
+      margin-bottom: 10px;
+      box-shadow: 4px 4px 8px rgba(0,0,0,0.15),
+                  -4px -4px 8px rgba(255,255,255,0.7);
     }
     .list-view .item-row:last-child {
-      border-bottom: none;
+      margin-bottom: 0;
     }
-    /* Form Groups */
+
+    /* ---------- FORMS & BUTTONS ---------- */
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     .form-group label {
       display: block;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-weight: bold;
     }
     .form-group input,
     .form-group select {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: var(--light-bg);
+      box-shadow: inset 4px 4px 8px rgba(0,0,0,0.15),
+                  inset -4px -4px 8px rgba(255,255,255,0.7);
     }
-    /* Buttons */
     button {
       cursor: pointer;
-    }
-    #btn-add, #btn-remove, #btn-new-add {
-      width: 100%;
-      padding: 10px;
       border: none;
-      border-radius: 8px;
-      background: #b2ebf2;
-      color: #0d47a1;
-      margin-top: 10px;
-      transition: background 0.3s;
+      border-radius: 12px;
+      background: var(--accent);
+      color: var(--dark-text);
+      padding: 12px;
+      transition: background 0.3s ease;
+      box-shadow: 4px 4px 8px rgba(0,0,0,0.15),
+                  -4px -4px 8px rgba(255,255,255,0.7);
     }
-    #btn-add:hover, #btn-remove:hover, #btn-new-add:hover {
-      background: #80deea;
+    button:hover {
+      background: var(--accent-hover);
     }
-    .export-btn, #btn-share-liked {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 8px;
-      background: #b2ebf2;
-      margin-bottom: 10px;
-      transition: background 0.3s;
-    }
-    .export-btn:hover, #btn-share-liked:hover {
-      background: #80deea;
-    }
-    /* Category Tabs */
+
+    /* ---------- CATEGORY TABS ---------- */
     .sub-tabs {
       display: flex;
       gap: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
     .category-tab {
-      padding: 8px 12px;
-      border: 1px solid #0d47a1;
-      border-radius: 8px;
+      padding: 10px 16px;
+      border: 1px solid var(--dark-text);
+      border-radius: 12px;
       cursor: pointer;
+      background: var(--light-bg);
+      transition: background 0.3s ease;
+      box-shadow: 4px 4px 8px rgba(0,0,0,0.15),
+                  -4px -4px 8px rgba(255,255,255,0.7);
     }
     .category-tab.active {
-      background: #0d47a1;
+      background: var(--dark-text);
       color: #fff;
     }
-    /* Modals */
+
+    /* ---------- MODALS ---------- */
     .modal {
       position: fixed;
       top: 0;
@@ -230,12 +274,13 @@
       display: flex;
     }
     .modal-content {
-      background: #ffffff;
+      background: var(--card-bg);
       padding: 20px;
-      border-radius: 12px;
+      border-radius: 16px;
       max-width: 400px;
       width: 90%;
-      box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
+      box-shadow: 8px 8px 16px rgba(0,0,0,0.15),
+                  -8px -8px 16px rgba(255,255,255,0.7);
     }
     .modal-content h2 {
       margin-top: 0;
@@ -245,6 +290,7 @@
       justify-content: flex-end;
       gap: 10px;
     }
+
     /* ---------- DARK MODE ---------- */
     .night-mode body {
       background: #121212;
@@ -252,11 +298,15 @@
     }
     .night-mode .container {
       background: #1e1e1e;
+      box-shadow: none;
     }
-    .night-mode h1, .night-mode h2, .night-mode label {
+    .night-mode .header h1,
+    .night-mode h2,
+    .night-mode label {
       color: #e0e0e0;
     }
-    .night-mode .inventory-card, .night-mode .modal-content {
+    .night-mode .inventory-card,
+    .night-mode .modal-content {
       background: #1e1e1e;
       box-shadow: none;
     }
@@ -283,10 +333,10 @@
         <button id="btn-load-backup" title="Load Backup">📂</button>
         <button id="btn-share" title="Share Inventory">🔗</button>
         <button id="nightModeToggle" title="Toggle Dark Mode">🌙</button>
-        <input type="file" id="backup-file" accept=".txt" style="display: none;">
+        <input type="file" id="backup-file" accept=".json" style="display: none;">
       </div>
     </div>
-    
+
     <!-- Tabs -->
     <div class="tabs">
       <div id="tab-inventory" class="tab active">Inventory</div>
@@ -294,11 +344,10 @@
       <div id="tab-new" class="tab">New Item</div>
       <div id="tab-liked" class="tab">Liked</div>
     </div>
-    
+
     <!-- Inventory Tab -->
     <div id="content-inventory" class="tab-content active">
       <h2>Inventory</h2>
-      <!-- Control Panel -->
       <div class="control-panel">
         <input type="text" id="inventory-search" placeholder="Search items...">
         <select id="inventory-sort">
@@ -316,7 +365,7 @@
       <div class="sub-tabs" id="category-tabs"></div>
       <div id="inventory-list"></div>
     </div>
-    
+
     <!-- In/Out Items Tab -->
     <div id="content-inout" class="tab-content">
       <h2>In/Out Items</h2>
@@ -332,12 +381,12 @@
         <label for="inout-qty">Quantity:</label>
         <input type="number" id="inout-qty" value="1" min="1">
       </div>
-      <div style="display: flex; gap: 4%;">
+      <div style="display: flex; gap: 10px;">
         <button id="btn-add">Add</button>
         <button id="btn-remove">Remove</button>
       </div>
     </div>
-    
+
     <!-- New Item Tab -->
     <div id="content-new" class="tab-content">
       <h2>New Item</h2>
@@ -361,7 +410,7 @@
       </div>
       <button id="btn-new-add">Add New Item</button>
     </div>
-    
+
     <!-- Liked Tab -->
     <div id="content-liked" class="tab-content">
       <h2>Liked</h2>
@@ -376,7 +425,7 @@
       <div id="liked-list"></div>
     </div>
   </div>
-  
+
   <!-- Confirmation Modal -->
   <div id="confirm-modal" class="modal">
     <div class="modal-content">
@@ -388,7 +437,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Edit Modal -->
   <div id="edit-modal" class="modal">
     <div class="modal-content">
@@ -407,7 +456,7 @@
       </div>
     </div>
   </div>
-  
+
   <script>
     // GLOBAL VARIABLES
     let inventory = [];
@@ -416,7 +465,7 @@
     let activeCategoryTab = "All";
     let currentRemoveId = null;
     let currentEditId = null;
-    let sharedMode = false; // true for shared (read-only) view
+    let sharedMode = false; // true for shared view
 
     // Controls for Inventory & Liked
     let inventorySearchTerm = "";
@@ -451,7 +500,7 @@
     const inventorySortSelect = document.getElementById('inventory-sort');
     const inventoryViewCardsBtn = document.getElementById('inventory-view-cards');
     const inventoryViewListBtn = document.getElementById('inventory-view-list');
-    // Liked Tab view toggle
+    // For Liked Tab view toggle
     const likedViewCardsBtn = document.getElementById('liked-view-cards');
     const likedViewListBtn = document.getElementById('liked-view-list');
 
@@ -473,16 +522,16 @@
       const nightModeToggle = document.getElementById('nightModeToggle');
       const backupFileInput = document.getElementById('backup-file');
 
-     btnSaveBackup.addEventListener("click", () => {
-  const dataStr = JSON.stringify(inventory, null, 2);
-  const blob = new Blob([dataStr], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "inventory_backup.json"; // Changed extension to .json
-  a.click();
-  URL.revokeObjectURL(url);
-});
+      btnSaveBackup.addEventListener("click", () => {
+        const dataStr = JSON.stringify(inventory, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "inventory_backup.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
 
       btnLoadBackup.addEventListener("click", () => {
         backupFileInput.click();
@@ -631,15 +680,15 @@
     /* RENDER CATEGORY TABS */
     function renderCategoryTabs() {
       categoryTabsDiv.innerHTML = "";
-      const all = document.createElement("div");
-      all.className = "category-tab" + (activeCategoryTab === "All" ? " active" : "");
-      all.textContent = "All";
-      all.addEventListener("click", () => {
+      const allTab = document.createElement("div");
+      allTab.className = "category-tab" + (activeCategoryTab === "All" ? " active" : "");
+      allTab.textContent = "All";
+      allTab.addEventListener("click", () => {
         activeCategoryTab = "All";
         renderCategoryTabs();
         updateInventoryDisplay();
       });
-      categoryTabsDiv.appendChild(all);
+      categoryTabsDiv.appendChild(allTab);
       const categories = new Set(inventory.map(item => item.category));
       categories.forEach(cat => {
         const tab = document.createElement("div");
@@ -781,7 +830,7 @@
           likedDiv.className = "liked-item";
           let html = "";
           if (item.image) {
-            html += `<img src="${item.image}" alt="${item.name}" style="width:60px; height:60px; object-fit:cover; border-radius:4px; margin-right:10px;">`;
+            html += `<img src="${item.image}" alt="${item.name}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; margin-right:10px;">`;
           }
           html += `<strong>${item.name}</strong> (${item.category}) - Quantity: ${item.quantity}`;
           likedDiv.innerHTML = html;
@@ -794,7 +843,7 @@
           likedDiv.appendChild(removeBtn);
           likedListDiv.appendChild(likedDiv);
         });
-      } else {
+      } else { // List view for liked
         const listContainer = document.createElement("div");
         listContainer.className = "list-view";
         liked.forEach(item => {
@@ -930,11 +979,11 @@
         return;
       }
       const file = newImageInput.files[0];
-      // Function to add new item into inventory (with backup image data if available)
+      // Function to add item, storing both the external URL and full backup data
       const addItemToLocal = (displayUrl, backupData) => {
         const newItem = { id: nextId++, name: nameVal, category: catVal, quantity: qtyVal, image: displayUrl, backup: backupData || null };
         inventory.push(newItem);
-        // Reset new item form and clear search/filters
+        // Reset New Item form and clear search/filter settings
         newNameInput.value = "";
         newCategoryInput.value = "";
         newQtyInput.value = "1";
@@ -1027,7 +1076,7 @@
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const fullDataUrl = e.target.result; // full data URL (backup)
+          const fullDataUrl = e.target.result; // full backup data
           const base64 = fullDataUrl.split(",")[1];
           try {
             const formData = new URLSearchParams();
@@ -1039,7 +1088,6 @@
             });
             const result = await response.json();
             if (result.success) {
-              // Return both the imgbb URL and the full backup data URL
               resolve({ display_url: result.data.display_url, backup_data: fullDataUrl });
             } else {
               reject(result.error);
@@ -1058,7 +1106,6 @@
       const params = new URLSearchParams(window.location.search);
       const likedDataParam = params.get("likeddata");
       const dataParam = params.get("data");
-      
       if (likedDataParam) {
         try {
           const decoded = atob(likedDataParam);
