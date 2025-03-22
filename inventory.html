@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inventory App - Neumorphic Style</title>
+  <title>Inventory App - Neumorphic with History Log</title>
   <style>
     /* ---------- BASE COLOR SCHEME ---------- */
     :root {
@@ -13,7 +13,6 @@
       --accent: #b2ebf2;        /* accent color for buttons */
       --accent-hover: #80deea;  /* hover color for buttons */
     }
-
     /* ---------- NEUMORPHIC BASE STYLES ---------- */
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -31,7 +30,6 @@
       box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.15),
                   -8px -8px 16px rgba(255, 255, 255, 0.7);
     }
-
     /* ---------- HEADER ---------- */
     .header {
       display: flex;
@@ -66,7 +64,6 @@
     .header-icons input {
       display: none;
     }
-
     /* ---------- TABS ---------- */
     .tabs {
       display: flex;
@@ -97,7 +94,6 @@
     .tab-content.active {
       display: block;
     }
-
     /* ---------- CONTROL PANEL ---------- */
     .control-panel {
       display: flex;
@@ -132,7 +128,6 @@
     .control-panel .view-toggle button:hover {
       background: var(--accent-hover);
     }
-
     /* ---------- INVENTORY CARDS ---------- */
     #inventory-list {
       display: grid;
@@ -185,7 +180,6 @@
     .card-actions button:hover {
       transform: translateY(-2px);
     }
-
     /* ---------- LIST VIEW ---------- */
     .list-view .item-row {
       display: flex;
@@ -201,8 +195,7 @@
     .list-view .item-row:last-child {
       margin-bottom: 0;
     }
-
-    /* ---------- FORMS & BUTTONS ---------- */
+    /* ---------- FORMS ---------- */
     .form-group {
       margin-bottom: 20px;
     }
@@ -222,7 +215,6 @@
                   inset -4px -4px 8px rgba(255,255,255,0.7);
     }
     button {
-      cursor: pointer;
       border: none;
       border-radius: 12px;
       background: var(--accent);
@@ -235,7 +227,6 @@
     button:hover {
       background: var(--accent-hover);
     }
-
     /* ---------- CATEGORY TABS ---------- */
     .sub-tabs {
       display: flex;
@@ -256,7 +247,20 @@
       background: var(--dark-text);
       color: #fff;
     }
-
+    /* ---------- HISTORY LOG ---------- */
+    #history-log {
+      max-height: 200px;
+      overflow-y: auto;
+      background: var(--light-bg);
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: inset 4px 4px 8px rgba(0,0,0,0.15),
+                  inset -4px -4px 8px rgba(255,255,255,0.7);
+    }
+    #history-log p {
+      margin: 4px 0;
+      font-size: 0.9em;
+    }
     /* ---------- MODALS ---------- */
     .modal {
       position: fixed;
@@ -290,7 +294,6 @@
       justify-content: flex-end;
       gap: 10px;
     }
-
     /* ---------- DARK MODE ---------- */
     .night-mode body {
       background: #121212;
@@ -300,19 +303,17 @@
       background: #1e1e1e;
       box-shadow: none;
     }
-    .night-mode .header h1,
-    .night-mode h2,
-    .night-mode label {
+    .night-mode h1, .night-mode h2, .night-mode label {
       color: #e0e0e0;
     }
-    .night-mode .inventory-card,
-    .night-mode .modal-content {
+    .night-mode .inventory-card, .night-mode .modal-content {
       background: #1e1e1e;
       box-shadow: none;
     }
     .night-mode button {
       background: #bb86fc;
       color: #121212;
+      box-shadow: 4px 4px 8px rgba(0,0,0,0.4);
     }
     .night-mode button:hover {
       background: #985eff;
@@ -336,7 +337,7 @@
         <input type="file" id="backup-file" accept=".json" style="display: none;">
       </div>
     </div>
-
+    
     <!-- Tabs -->
     <div class="tabs">
       <div id="tab-inventory" class="tab active">Inventory</div>
@@ -344,10 +345,11 @@
       <div id="tab-new" class="tab">New Item</div>
       <div id="tab-liked" class="tab">Liked</div>
     </div>
-
+    
     <!-- Inventory Tab -->
     <div id="content-inventory" class="tab-content active">
       <h2>Inventory</h2>
+      <!-- Control Panel -->
       <div class="control-panel">
         <input type="text" id="inventory-search" placeholder="Search items...">
         <select id="inventory-sort">
@@ -365,7 +367,7 @@
       <div class="sub-tabs" id="category-tabs"></div>
       <div id="inventory-list"></div>
     </div>
-
+    
     <!-- In/Out Items Tab -->
     <div id="content-inout" class="tab-content">
       <h2>In/Out Items</h2>
@@ -385,8 +387,11 @@
         <button id="btn-add">Add</button>
         <button id="btn-remove">Remove</button>
       </div>
+      <!-- History Log Section -->
+      <h3>History Log</h3>
+      <div id="history-log"></div>
     </div>
-
+    
     <!-- New Item Tab -->
     <div id="content-new" class="tab-content">
       <h2>New Item</h2>
@@ -410,7 +415,7 @@
       </div>
       <button id="btn-new-add">Add New Item</button>
     </div>
-
+    
     <!-- Liked Tab -->
     <div id="content-liked" class="tab-content">
       <h2>Liked</h2>
@@ -425,7 +430,7 @@
       <div id="liked-list"></div>
     </div>
   </div>
-
+  
   <!-- Confirmation Modal -->
   <div id="confirm-modal" class="modal">
     <div class="modal-content">
@@ -437,7 +442,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Edit Modal -->
   <div id="edit-modal" class="modal">
     <div class="modal-content">
@@ -456,7 +461,7 @@
       </div>
     </div>
   </div>
-
+  
   <script>
     // GLOBAL VARIABLES
     let inventory = [];
@@ -466,6 +471,9 @@
     let currentRemoveId = null;
     let currentEditId = null;
     let sharedMode = false; // true for shared view
+
+    // Global history log array
+    let historyLog = [];
 
     // Controls for Inventory & Liked
     let inventorySearchTerm = "";
@@ -500,7 +508,7 @@
     const inventorySortSelect = document.getElementById('inventory-sort');
     const inventoryViewCardsBtn = document.getElementById('inventory-view-cards');
     const inventoryViewListBtn = document.getElementById('inventory-view-list');
-    // For Liked Tab view toggle
+    // Liked Tab view toggle
     const likedViewCardsBtn = document.getElementById('liked-view-cards');
     const likedViewListBtn = document.getElementById('liked-view-list');
 
@@ -513,6 +521,24 @@
     const editCategory = document.getElementById('edit-category');
     const editSave = document.getElementById('edit-save');
     const editCancel = document.getElementById('edit-cancel');
+
+    /* Function to log events */
+    function logEvent(message) {
+      const timestamp = new Date().toLocaleString();
+      historyLog.push(`${timestamp}: ${message}`);
+      updateHistoryDisplay();
+    }
+    function updateHistoryDisplay() {
+      const historyDiv = document.getElementById("history-log");
+      if (historyDiv) {
+        historyDiv.innerHTML = "";
+        historyLog.forEach(log => {
+          const p = document.createElement("p");
+          p.textContent = log;
+          historyDiv.appendChild(p);
+        });
+      }
+    }
 
     /* HEADER BUTTONS - Set up Once */
     document.addEventListener("DOMContentLoaded", () => {
@@ -746,7 +772,10 @@
             const removeBtn = document.createElement("button");
             removeBtn.textContent = "🗑️";
             removeBtn.title = "Remove Item";
-            removeBtn.addEventListener("click", () => openConfirmModal(item.id, item.name));
+            removeBtn.addEventListener("click", () => {
+              logEvent(`Item deleted: ${item.name}`);
+              openConfirmModal(item.id, item.name);
+            });
             actionsDiv.appendChild(editBtn);
             actionsDiv.appendChild(removeBtn);
           }
@@ -758,7 +787,7 @@
           card.insertAdjacentElement("afterbegin", actionsDiv);
           inventoryListDiv.appendChild(card);
         });
-      } else { // List view
+      } else {
         const listContainer = document.createElement("div");
         listContainer.className = "list-view";
         items.forEach(item => {
@@ -779,7 +808,10 @@
             const removeBtn = document.createElement("button");
             removeBtn.textContent = "🗑️";
             removeBtn.title = "Remove Item";
-            removeBtn.addEventListener("click", () => openConfirmModal(item.id, item.name));
+            removeBtn.addEventListener("click", () => {
+              logEvent(`Item deleted: ${item.name}`);
+              openConfirmModal(item.id, item.name);
+            });
             actionsDiv.appendChild(removeBtn);
           }
           const likedBtn = document.createElement("button");
@@ -843,7 +875,7 @@
           likedDiv.appendChild(removeBtn);
           likedListDiv.appendChild(likedDiv);
         });
-      } else { // List view for liked
+      } else {
         const listContainer = document.createElement("div");
         listContainer.className = "list-view";
         liked.forEach(item => {
@@ -915,6 +947,7 @@
       if (item) {
         item.quantity += qty;
         updateInventoryDisplay();
+        logEvent(`In: Added ${qty} to ${item.name}`);
       }
     });
     btnRemove.addEventListener("click", () => {
@@ -925,6 +958,7 @@
       if (item) {
         item.quantity = Math.max(0, item.quantity - qty);
         updateInventoryDisplay();
+        logEvent(`Out: Removed ${qty} from ${item.name}`);
       }
     });
 
@@ -979,11 +1013,11 @@
         return;
       }
       const file = newImageInput.files[0];
-      // Function to add item, storing both the external URL and full backup data
       const addItemToLocal = (displayUrl, backupData) => {
         const newItem = { id: nextId++, name: nameVal, category: catVal, quantity: qtyVal, image: displayUrl, backup: backupData || null };
         inventory.push(newItem);
-        // Reset New Item form and clear search/filter settings
+        logEvent(`New item added: ${nameVal}`);
+        // Reset New Item form and clear search/filter
         newNameInput.value = "";
         newCategoryInput.value = "";
         newQtyInput.value = "1";
@@ -995,7 +1029,6 @@
         updateInventoryDisplay();
         updateInOutCategories();
         updateInOutItems();
-        // Force switch to Inventory tab
         document.getElementById("tab-inventory").click();
       };
       if (file) {
@@ -1020,6 +1053,10 @@
     }
     confirmOk.addEventListener("click", () => {
       if (currentRemoveId !== null) {
+        const removedItem = inventory.find(i => i.id === currentRemoveId);
+        if(removedItem) {
+          logEvent(`Item deleted: ${removedItem.name}`);
+        }
         inventory = inventory.filter(i => i.id !== currentRemoveId);
         updateInventoryDisplay();
         updateInOutCategories();
@@ -1049,15 +1086,14 @@
         alert("Please fill in all fields correctly.");
         return;
       }
-      const duplicate = inventory.find(i => i.name.toLowerCase() === newNameVal.toLowerCase() && i.id !== currentEditId);
-      if (duplicate) {
-        alert("Another item with that name already exists.");
-        return;
-      }
       const item = inventory.find(i => i.id === currentEditId);
       if (item) {
+        const oldName = item.name;
         item.name = newNameVal;
         item.category = newCatVal;
+        if (oldName !== newNameVal) {
+          logEvent(`Item updated: ${oldName} → ${newNameVal}`);
+        }
       }
       editModal.classList.remove("active");
       currentEditId = null;
@@ -1076,7 +1112,7 @@
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e) => {
-          const fullDataUrl = e.target.result; // full backup data
+          const fullDataUrl = e.target.result;
           const base64 = fullDataUrl.split(",")[1];
           try {
             const formData = new URLSearchParams();
