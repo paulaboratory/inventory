@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inventory App - Neumorphic with History & Persistence</title>
-  <!-- Include LZ-String library from CDN for compression -->
+  <!-- Include LZ-String library from CDN for compression in sharing liked list -->
   <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
   <style>
     /* ---------- BASE COLOR SCHEME ---------- */
@@ -29,8 +29,8 @@
       padding: 30px;
       border-radius: 20px;
       background: var(--light-bg);
-      box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.15),
-                  -8px -8px 16px rgba(255, 255, 255, 0.7);
+      box-shadow: 8px 8px 16px rgba(0,0,0,0.15),
+                  -8px -8px 16px rgba(255,255,255,0.7);
     }
     /* ---------- HEADER ---------- */
     .header {
@@ -583,8 +583,10 @@
       const backupFileInput = document.getElementById('backup-file');
 
       btnSaveBackup.addEventListener("click", () => {
+        // When saving backup, exclude the backup image data
+        const backupInventory = inventory.map(({ backup, ...rest }) => rest);
         const appData = {
-          inventory: inventory,
+          inventory: backupInventory,
           liked: liked,
           historyLog: historyLog
         };
@@ -648,7 +650,6 @@
       // Liked List Share using LZ-String compression
       btnShareLiked.addEventListener("click", () => {
         const dataStr = JSON.stringify(liked);
-        // Compress the liked data
         const compressed = LZString.compressToEncodedURIComponent(dataStr);
         const shareableLink = window.location.origin + window.location.pathname + "?likeddata=" + compressed;
         navigator.clipboard.writeText(shareableLink)
@@ -1216,7 +1217,7 @@
       const dataParam = params.get("data");
       if (likedDataParam) {
         try {
-          // Decompress liked data using LZString
+          // Decompress liked data using LZ-String
           const decompressed = LZString.decompressFromEncodedURIComponent(likedDataParam);
           const sharedLiked = JSON.parse(decompressed);
           if (Array.isArray(sharedLiked)) {
