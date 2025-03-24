@@ -633,12 +633,18 @@
         reader.readAsText(file);
       });
 
-      btnShare.addEventListener("click", () => {
-        const appData = {
-          inventory: inventory,
-          liked: liked,
-          historyLog: historyLog
-        };
+  btnShare.addEventListener("click", () => {
+  // Create a shareable version of inventory without the backup property
+  const shareInventory = inventory.map(({ backup, ...rest }) => rest);
+  const dataStr = JSON.stringify(shareInventory);
+  // Compress the JSON data
+  const compressed = LZString.compressToEncodedURIComponent(dataStr);
+  const shareableLink = window.location.origin + window.location.pathname + "?data=" + compressed;
+  navigator.clipboard.writeText(shareableLink)
+    .then(() => alert("Shareable link copied to clipboard:\n" + shareableLink))
+    .catch(err => prompt("Copy this link:", shareableLink));
+});
+
         const dataStr = JSON.stringify(appData);
         const encodedData = btoa(dataStr);
         const shareableLink = window.location.origin + window.location.pathname + "?data=" + encodeURIComponent(encodedData);
