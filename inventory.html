@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inventory App - Neumorphic with History & Persistence</title>
-  <!-- Include LZ-String library from CDN for compression in sharing liked list -->
+  <title>Inventory App - Neumorphic with Persistence & Sharing</title>
+  <!-- Include LZ-String library for compressing share data -->
   <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
   <style>
     /* ---------- BASE COLOR SCHEME ---------- */
@@ -573,7 +573,7 @@
       }
     }
 
-    /* HEADER BUTTONS - Set up Once */
+    /* HEADER BUTTONS */
     document.addEventListener("DOMContentLoaded", () => {
       loadData();
       const btnSaveBackup = document.getElementById('btn-save-backup');
@@ -582,8 +582,8 @@
       const nightModeToggle = document.getElementById('nightModeToggle');
       const backupFileInput = document.getElementById('backup-file');
 
+      // Save backup without backup image data (only image URL)
       btnSaveBackup.addEventListener("click", () => {
-        // When saving backup, exclude the backup image data
         const backupInventory = inventory.map(({ backup, ...rest }) => rest);
         const appData = {
           inventory: backupInventory,
@@ -633,27 +633,18 @@
         reader.readAsText(file);
       });
 
-  btnShare.addEventListener("click", () => {
-  // Create a shareable version of inventory without the backup property
-  const shareInventory = inventory.map(({ backup, ...rest }) => rest);
-  const dataStr = JSON.stringify(shareInventory);
-  // Compress the JSON data
-  const compressed = LZString.compressToEncodedURIComponent(dataStr);
-  const shareableLink = window.location.origin + window.location.pathname + "?data=" + compressed;
-  navigator.clipboard.writeText(shareableLink)
-    .then(() => alert("Shareable link copied to clipboard:\n" + shareableLink))
-    .catch(err => prompt("Copy this link:", shareableLink));
-});
-
-        const dataStr = JSON.stringify(appData);
-        const encodedData = btoa(dataStr);
-        const shareableLink = window.location.origin + window.location.pathname + "?data=" + encodeURIComponent(encodedData);
+      // Share Inventory: Remove backup property and compress data
+      btnShare.addEventListener("click", () => {
+        const shareInventory = inventory.map(({ backup, ...rest }) => rest);
+        const dataStr = JSON.stringify(shareInventory);
+        const compressed = LZString.compressToEncodedURIComponent(dataStr);
+        const shareableLink = window.location.origin + window.location.pathname + "?data=" + compressed;
         navigator.clipboard.writeText(shareableLink)
           .then(() => alert("Shareable link copied to clipboard:\n" + shareableLink))
           .catch(err => prompt("Copy this link:", shareableLink));
       });
 
-      // Liked List Share using LZ-String compression
+      // Share Liked using LZ-String
       btnShareLiked.addEventListener("click", () => {
         const dataStr = JSON.stringify(liked);
         const compressed = LZString.compressToEncodedURIComponent(dataStr);
@@ -697,7 +688,7 @@
       updateInventoryDisplay();
     }
 
-    /* EXPORT FUNCTIONS */
+    /* EXPORT CSV FUNCTIONS */
     function exportCSV(data, filename) {
       if (!data || !data.length) {
         alert("No data to export.");
@@ -855,7 +846,7 @@
           card.insertAdjacentElement("afterbegin", actionsDiv);
           inventoryListDiv.appendChild(card);
         });
-      } else {
+      } else { // List view
         const listContainer = document.createElement("div");
         listContainer.className = "list-view";
         items.forEach(item => {
