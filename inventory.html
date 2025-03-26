@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inventory App - Neumorphic with Persistence & Sharing</title>
-  <!-- Include LZ-String library for compressing share data -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory App - Neumorphic with Backup Preservation</title>
+  <!-- Include LZ-String for compressing share data -->
   <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
   <style>
     /* ---------- BASE COLOR SCHEME ---------- */
     :root {
-      --light-bg: #e0f7fa;      /* light cyan background */
-      --dark-text: #0d47a1;     /* dark blue text */
-      --card-bg: #ffffff;       /* card background */
-      --accent: #b2ebf2;        /* accent color for buttons */
-      --accent-hover: #80deea;  /* hover color for buttons */
+      --light-bg: #e0f7fa;
+      --dark-text: #0d47a1;
+      --card-bg: #ffffff;
+      --accent: #b2ebf2;
+      --accent-hover: #80deea;
     }
-    /* ---------- NEUMORPHIC BASE STYLES ---------- */
+    /* ---------- NEUMORPHIC STYLES ---------- */
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
@@ -526,7 +526,7 @@
     /* LOCAL STORAGE FUNCTIONS */
     function saveData() {
       const appData = {
-        inventory: inventory,
+        inventory: inventory, // full inventory including backup data
         liked: liked,
         historyLog: historyLog
       };
@@ -582,11 +582,10 @@
       const nightModeToggle = document.getElementById('nightModeToggle');
       const backupFileInput = document.getElementById('backup-file');
 
-      // Save backup without backup image data (only image URL)
+      // Save backup – include full backup image data in JSON
       btnSaveBackup.addEventListener("click", () => {
-        const backupInventory = inventory.map(({ backup, ...rest }) => rest);
         const appData = {
-          inventory: backupInventory,
+          inventory: inventory, // include backup property
           liked: liked,
           historyLog: historyLog
         };
@@ -633,7 +632,7 @@
         reader.readAsText(file);
       });
 
-      // Share Inventory: Remove backup property and compress data
+      // Share Inventory: Remove backup data to keep URL short, compress data using LZ-String
       btnShare.addEventListener("click", () => {
         const shareInventory = inventory.map(({ backup, ...rest }) => rest);
         const dataStr = JSON.stringify(shareInventory);
@@ -644,7 +643,7 @@
           .catch(err => prompt("Copy this link:", shareableLink));
       });
 
-      // Share Liked using LZ-String
+      // Share Liked List with LZ-String compression
       btnShareLiked.addEventListener("click", () => {
         const dataStr = JSON.stringify(liked);
         const compressed = LZString.compressToEncodedURIComponent(dataStr);
@@ -1214,7 +1213,6 @@
       const dataParam = params.get("data");
       if (likedDataParam) {
         try {
-          // Decompress liked data using LZ-String
           const decompressed = LZString.decompressFromEncodedURIComponent(likedDataParam);
           const sharedLiked = JSON.parse(decompressed);
           if (Array.isArray(sharedLiked)) {
