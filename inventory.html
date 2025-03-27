@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory App - Neumorphic with Backup Preservation</title>
+  <title>Inventory App - Neumorphic with Backup & PDF Generation</title>
+  <!-- Include html2pdf.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
   <!-- Include LZ-String for compressing share data -->
   <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
   <style>
@@ -297,6 +299,26 @@
       justify-content: flex-end;
       gap: 10px;
     }
+    /* ---------- PDF CONTENT (Hidden) ---------- */
+    #pdf-content {
+      display: none;
+    }
+    #pdf-content .pdf-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 10px;
+    }
+    #pdf-content .pdf-item img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      margin-right: 10px;
+    }
+    #pdf-content .pdf-item .details {
+      flex: 1;
+    }
     /* ---------- DARK MODE ---------- */
     .night-mode body {
       background: #121212;
@@ -367,6 +389,7 @@
         </div>
       </div>
       <button id="btn-export-inventory" class="export-btn">Export Inventory</button>
+      <button id="btn-generate-pdf" class="export-btn">Generate PDF</button>
       <div class="sub-tabs" id="category-tabs"></div>
       <div id="inventory-list"></div>
     </div>
@@ -433,6 +456,9 @@
       <div id="liked-list"></div>
     </div>
   </div>
+
+  <!-- Hidden PDF Content -->
+  <div id="pdf-content"></div>
 
   <!-- Confirmation Modal -->
   <div id="confirm-modal" class="modal">
@@ -503,7 +529,8 @@
     const btnExportInventory = document.getElementById('btn-export-inventory');
     const btnExportLiked = document.getElementById('btn-export-liked');
     const btnShareLiked = document.getElementById('btn-share-liked');
-
+    const btnGeneratePDF = document.getElementById('btn-generate-pdf');
+    
     // Control Panel Elements for Inventory
     const inventorySearchInput = document.getElementById('inventory-search');
     const inventorySortSelect = document.getElementById('inventory-sort');
@@ -512,7 +539,7 @@
     // Liked Tab view toggle
     const likedViewCardsBtn = document.getElementById('liked-view-cards');
     const likedViewListBtn = document.getElementById('liked-view-list');
-
+    
     const confirmModal = document.getElementById('confirm-modal');
     const confirmMessage = document.getElementById('confirm-message');
     const confirmOk = document.getElementById('confirm-ok');
@@ -522,11 +549,12 @@
     const editCategory = document.getElementById('edit-category');
     const editSave = document.getElementById('edit-save');
     const editCancel = document.getElementById('edit-cancel');
-
+    const pdfContent = document.getElementById('pdf-content');
+    
     /* LOCAL STORAGE FUNCTIONS */
     function saveData() {
       const appData = {
-        inventory: inventory, // full inventory including backup data
+        inventory: inventory, // include full backup data
         liked: liked,
         historyLog: historyLog
       };
@@ -553,7 +581,7 @@
         }
       }
     }
-
+    
     /* HISTORY LOG FUNCTIONS */
     function logEvent(message) {
       const timestamp = new Date().toLocaleString();
@@ -572,7 +600,7 @@
         });
       }
     }
-
+    
     /* HEADER BUTTONS */
     document.addEventListener("DOMContentLoaded", () => {
       loadData();
@@ -581,11 +609,11 @@
       const btnShare = document.getElementById('btn-share');
       const nightModeToggle = document.getElementById('nightModeToggle');
       const backupFileInput = document.getElementById('backup-file');
-
-      // Save backup – include full backup image data in JSON
+    
+      // Save backup – include full backup image data
       btnSaveBackup.addEventListener("click", () => {
         const appData = {
-          inventory: inventory, // include backup property
+          inventory: inventory,
           liked: liked,
           historyLog: historyLog
         };
@@ -598,7 +626,7 @@
         a.click();
         URL.revokeObjectURL(url);
       });
-
+    
       btnLoadBackup.addEventListener("click", () => {
         backupFileInput.click();
       });
@@ -631,8 +659,8 @@
         };
         reader.readAsText(file);
       });
-
-      // Share Inventory: Remove backup data to keep URL short, compress data using LZ-String
+    
+      // Share Inventory: Remove backup property to keep URL short and compress data
       btnShare.addEventListener("click", () => {
         const shareInventory = inventory.map(({ backup, ...rest }) => rest);
         const dataStr = JSON.stringify(shareInventory);
@@ -642,8 +670,8 @@
           .then(() => alert("Shareable link copied to clipboard:\n" + shareableLink))
           .catch(err => prompt("Copy this link:", shareableLink));
       });
-
-      // Share Liked List with LZ-String compression
+    
+      // Share Liked List using LZ-String compression
       btnShareLiked.addEventListener("click", () => {
         const dataStr = JSON.stringify(liked);
         const compressed = LZString.compressToEncodedURIComponent(dataStr);
@@ -652,13 +680,16 @@
           .then(() => alert("Shareable Liked List link copied to clipboard:\n" + shareableLink))
           .catch(err => prompt("Copy this link:", shareableLink));
       });
-
+    
       nightModeToggle.addEventListener("click", () => {
         document.body.classList.toggle("night-mode");
         nightModeToggle.textContent = document.body.classList.contains("night-mode") ? "☀️" : "🌙";
       });
+    
+      // Generate PDF button
+      btnGeneratePDF.addEventListener("click", generatePDF);
     });
-
+    
     /* TAB SWITCHING */
     tabs.forEach(tab => {
       tab.addEventListener("click", () => {
@@ -678,7 +709,7 @@
         }
       });
     });
-
+    
     /* INITIALIZE APP */
     function initializeApp() {
       renderCategoryTabs();
@@ -686,7 +717,7 @@
       updateInOutItems();
       updateInventoryDisplay();
     }
-
+    
     /* EXPORT CSV FUNCTIONS */
     function exportCSV(data, filename) {
       if (!data || !data.length) {
@@ -722,7 +753,7 @@
     btnExportLiked.addEventListener("click", () => {
       exportCSV(liked, "liked_export.csv");
     });
-
+    
     /* INVENTORY TAB CONTROL PANEL */
     inventorySearchInput.addEventListener("input", (e) => {
       inventorySearchTerm = e.target.value.toLowerCase().trim();
@@ -760,7 +791,7 @@
         renderLiked();
       });
     }
-
+    
     /* RENDER CATEGORY TABS */
     function renderCategoryTabs() {
       categoryTabsDiv.innerHTML = "";
@@ -786,7 +817,7 @@
         categoryTabsDiv.appendChild(tab);
       });
     }
-
+    
     /* UPDATE INVENTORY DISPLAY */
     function updateInventoryDisplay() {
       let items = inventory.filter(item =>
@@ -845,7 +876,7 @@
           card.insertAdjacentElement("afterbegin", actionsDiv);
           inventoryListDiv.appendChild(card);
         });
-      } else { // List view
+      } else {
         const listContainer = document.createElement("div");
         listContainer.className = "list-view";
         items.forEach(item => {
@@ -908,7 +939,7 @@
       renderLiked();
       saveData();
     }
-
+    
     /* RENDER LIKED ITEMS */
     function renderLiked() {
       likedListDiv.innerHTML = "";
@@ -963,7 +994,7 @@
       }
       saveData();
     }
-
+    
     /* UPDATE IN/OUT ITEMS */
     function updateInOutCategories() {
       inoutCategorySelect.innerHTML = "";
@@ -1027,7 +1058,7 @@
         saveData();
       }
     });
-
+    
     /* NEW ITEM: CUSTOM DROPDOWN SUGGESTIONS */
     function showSuggestions(inputEl, suggestionsDiv, list) {
       const value = inputEl.value.toLowerCase().trim();
@@ -1064,7 +1095,7 @@
     }
     newNameInput.addEventListener("input", updateNameSuggestions);
     newCategoryInput.addEventListener("input", updateCategorySuggestions);
-
+    
     /* NEW ITEM: ADD NEW ITEM */
     btnNewAdd.addEventListener("click", () => {
       const nameVal = newNameInput.value.trim();
@@ -1111,7 +1142,7 @@
         addItemToLocal("", "");
       }
     });
-
+    
     /* CONFIRMATION MODAL */
     function openConfirmModal(itemId, itemName) {
       currentRemoveId = itemId;
@@ -1137,7 +1168,7 @@
       currentRemoveId = null;
       confirmModal.classList.remove("active");
     });
-
+    
     /* EDIT MODAL */
     function openEditModal(itemId) {
       currentEditId = itemId;
@@ -1175,7 +1206,7 @@
       currentEditId = null;
       editModal.classList.remove("active");
     });
-
+    
     /* IMAGE UPLOAD FUNCTION */
     function uploadImageToImgbb(file) {
       return new Promise((resolve, reject) => {
@@ -1205,7 +1236,44 @@
         reader.readAsDataURL(file);
       });
     }
-
+    
+    /* PDF GENERATION FUNCTION */
+    function generatePDF() {
+      // Clear pdfContent container
+      pdfContent.innerHTML = "";
+      // Build a container for the PDF with a nice layout:
+      inventory.forEach(item => {
+        const itemRow = document.createElement("div");
+        itemRow.className = "pdf-item";
+        // Image container
+        const imgDiv = document.createElement("div");
+        if (item.image) {
+          const img = document.createElement("img");
+          img.src = item.image;
+          img.alt = item.name;
+          imgDiv.appendChild(img);
+        }
+        // Details container
+        const detailsDiv = document.createElement("div");
+        detailsDiv.className = "details";
+        detailsDiv.innerHTML = `<strong>${item.name}</strong><br>
+          Category: ${item.category}<br>
+          Quantity: ${item.quantity}`;
+        itemRow.appendChild(imgDiv);
+        itemRow.appendChild(detailsDiv);
+        pdfContent.appendChild(itemRow);
+      });
+      // Use html2pdf to generate the PDF
+      const opt = {
+        margin:       10,
+        filename:     'inventory.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().from(pdfContent).set(opt).save();
+    }
+    
     /* SHARED DATA (if any) */
     function loadSharedData() {
       const params = new URLSearchParams(window.location.search);
@@ -1256,7 +1324,7 @@
       }
       return false;
     }
-
+    
     /* DOMContentLoaded */
     document.addEventListener("DOMContentLoaded", () => {
       initializeApp();
